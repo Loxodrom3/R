@@ -1,0 +1,150 @@
+###############################
+# Plot 1B - Pointing Accuracy for 2 blocks
+# Before and After BBA
+###############################
+
+##########################################################################################
+#
+# Upgrades: 
+#
+##########################################################################################
+
+library(ellipse)
+library(car)
+
+
+##################
+# Files and Data
+# note: I needed to remove extra lines from .xls, and add the headers listed vvv-below-vvv
+# Col F -> K raw_lat_delta	raw_lon_delta		adj_lat_delta	adj_lon_delta	
+##################
+filePath1 <- "C:/temp_working/bba/block46/"      # path to the files.  block46
+filePath2 <- "C:/temp_working/bba/block47/"      # path to the files.  block47
+file1     <- "block46_1b_evaluation.csv"    # 1B file  
+file2     <- "1b_accuracy_604strip_block47.csv"   # 1b file 
+inFile1 <- paste(filePath1, file1, sep = "")
+myData1 <- read.table(inFile1, header=TRUE, sep = ",")	#read the inFile as a table. 
+inFile2 <- paste(filePath2, file2, sep = "")
+myData2 <- read.table(inFile2, header=TRUE, sep = ",")	#read the inFile as a table. 
+
+rptConf <-(0.90)
+
+##################
+# write Data to arrays
+##################
+xRaw1  <- c(myData1 $raw_lon_delta)
+yRaw1  <- c(myData1 $raw_lat_delta)
+xAdj1  <- c(myData1 $adj_lon_delta)
+yAdj1  <- c(myData1 $adj_lat_delta)
+
+xRaw2  <- c(myData2 $raw_lon_delta)
+yRaw2  <- c(myData2 $raw_lat_delta)
+xAdj2  <- c(myData2 $adj_lon_delta)
+yAdj2  <- c(myData2 $adj_lat_delta)
+
+
+xRawAll<- append(xRaw1, xRaw2)  # Combine the datasets
+yRawAll<- append(yRaw1, yRaw2)  # Combine the datasets
+xAdjAll<- append(xAdj1, xAdj2)  # Combine the datasets
+yAdjAll<- append(yAdj1, yAdj2)  # Combine the datasets
+
+##################
+# make Ellipses
+##################
+#NOTE: Ellipses are not using rptConf for determining the confidence range
+
+raw_el <- dataEllipse (x= xRawAll, y= yRawAll, levels=c(0.9, 0.95), draw=FALSE)
+adj_el <- dataEllipse (x= xAdjAll, y= yAdjAll, levels=c(0.9, 0.95), draw=FALSE)
+
+##################
+# Plot Parameters
+##################
+
+xRange <- c(-8, 8)
+yRange <- c(-8, 8)
+xLabel <-  ("Easting offset (m)")
+yLabel <-  ("Northing offset (m)")
+Title  <-  ("Pointing Accuracy: Measured from 1B's")
+
+op <- par(mfrow = c(1, 1), # 1 x 1 pictures on one plot
+          pty = "s")       # square plotting region, independent of device size
+pltColor <- c("blue", "green4", "ivory3", "gray", "black")
+# color key-->[1]raw, [2]adj, [3]arrows, [4]grid, [5]x=0, y=0  
+
+
+##################
+# Plot
+##################
+
+   #########
+   # Raw points
+plot  (xRawAll, yRawAll, xlim=xRange, ylim = yRange,  col= pltColor[1], pch= 16, cex= 0.6, 
+      xlab= xLabel, ylab= yLabel,main= Title)
+
+   #########
+   # arrows
+   # drawing arrows here so other layers draw
+   # on top and reduce clutter
+for (i in 1: length(xRawAll)) {
+  arrows (xRawAll[i], yRawAll[i], xAdjAll[i], yAdjAll[i], 
+	length=0.1, angle=20, col= pltColor[3])
+} #end i arrows
+
+   #########
+   # Adj Points
+points(xAdjAll, yAdjAll, col= pltColor[2], cex=0.6, pch= 16) 
+
+   #########
+   # Ellipse
+   # Note: ellipse are not using rptconf
+lines(raw_el $'0.9', col= pltColor[1])
+lines(adj_el $'0.9', col= pltColor[2])
+
+
+   #######
+   # grid
+abline(h = min(xRange):max(xRange), v = min(yRange):max(yRange), col = pltColor[4], lty = 3)
+abline(h = 0, v = 0, col = pltColor[5], lty = 1)
+
+   ###############
+   # Center points
+points (mean (xRawAll), mean (yRawAll), col= pltColor[1], lwd= 2, pch= 3, cex= 4)
+points (mean (xAdjAll), mean (yAdjAll), col= pltColor[2], lwd= 2, pch= 3, cex= 4)
+
+  ########
+  # Legend
+
+  # get radial values
+rRawAll <- sqrt(xRawAll^2 + yRawAll^2)
+rAdjAll <- sqrt(xAdjAll^2 + yAdjAll^2)
+rRawConf <- signif(quantile(rRawAll, rptConf),3)
+rAdjConf <- signif(quantile(rAdjAll, rptConf),3)
+
+
+  # make label
+legRaw <- paste("raw - ", rRawConf, "(m) at 90% confidence", sep="")
+legAdj <- paste("adj  - ", rAdjConf, "(m) at 90% confidence", sep="")
+
+legCornerX <- min(xRange)
+legCornerY <- max(yRange)
+legend(legCornerX, legCornerY, c(legRaw, legAdj), 
+	col = c(pltColor[1],pltColor[2]), text.col = pltColor[5], lty = c(1, 1, 1, 1), lwd = c(1,1,1,1,1), pch = c(NA, NA, NA, NA),
+	merge = TRUE, bg = "gray90")
+
+
+
+##################
+# Data Statistics
+##################
+
+
+mean (xRawAll)
+mean (yRawAll)
+mean (xAdjAll)
+mean (yAdjAll)
+quantile (rRawAll, 0.90)
+quantile (rAdjAll, 0.90)
+
+
+
+

@@ -1,0 +1,79 @@
+  ###############################
+  # Plotting one and many errors
+  ###############################
+
+  ##########################################################################################
+  #
+  # Upgrades:
+  #
+  ##########################################################################################
+
+  legSigFig <- 3 # signifigant figures to use in Legend
+  rptConf <-c(0.90, 0.95, 0.99)
+
+  samps <- 20
+
+  ##################
+  # Plot Parameters
+  ##################
+
+      xRange <- c(-10, 10)
+      yRange <- c(-10, 10)
+      xLabel <-  ("x")
+      yLabel <-  ("y")
+      Title  <-  c("StDev", "RMSe")
+
+      pltColor <- c("blue", "green4", "ivory3", "gray", "black")
+  # re-do colors  # color key-->[1]raw, [2]adj, [3]arrows, [4]grid, [5]x=0, y=0
+
+      op <- par(mfrow = c(1, 2), # 1 x 1 pictures on one plot
+            pty = "s")       # square plotting region, independent of device size
+
+  ##################
+  # Data arrays
+  ##################
+
+      x0 <- rnorm(samps,-3,3)
+      y0 <- rnorm(samps,1,3)
+
+      x1 <- rnorm(samps,-3,3)
+      y1 <- rnorm(samps,1,3)
+
+  ##################
+  # initiate while and run through each file
+  ##################
+
+      ##################
+      # Plot
+      ##################
+      plot  (x0, y0, xlim=xRange, ylim = yRange,  col= pltColor[2], pch= 16, cex= 0.6,
+          xlab= xLabel, ylab= yLabel, main=Title[1])
+
+         #######
+         # grid
+      abline(h = min(xRange):max(xRange), v = min(yRange):max(yRange), col = pltColor[4], lty = 3)
+      abline(h = 0, v = 0, col = pltColor[5], lty = 1)
+
+
+      plot  (x0, y0, xlim=xRange, ylim = yRange,  col= pltColor[2], pch= 16, cex= 0.6,
+          xlab= xLabel, ylab= yLabel, main=Title[2])
+
+         #######
+         # grid
+      abline(h = min(xRange):max(xRange), v = min(yRange):max(yRange), col = pltColor[4], lty = 3)
+      abline(h = 0, v = 0, col = pltColor[5], lty = 1)
+
+
+        ########
+        # Legend
+  #    legCornerX <- min(xRange)
+  #    legCornerY <- max(yRange)
+  #    legend(legCornerX, legCornerY, c(legAdj),
+  #	col = c(pltColor[2]), text.col = pltColor[5], lty = c(1, 1, 1, 1),
+  #           lwd = c(1,1,1,1,1), pch = c(NA, NA, NA, NA),
+  #	merge = TRUE, bg = "gray90")
+
+
+  ##################
+  # Data Statistics
+  ##################

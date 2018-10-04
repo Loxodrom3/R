@@ -1,0 +1,110 @@
+###############################
+# Plot 1B - Pointing Accuracy for 1 block
+# Before and After BBA
+###############################
+
+##########################################################################################
+#
+# Upgrades: 
+#
+##########################################################################################
+
+library(ellipse)
+library(car)
+
+
+##################
+# Files and Data
+#
+# Note: I modify the .xls and take out blandk rows at the headers and footers then save as .csv files
+##################
+filePath1 <- "D:/OneDrive/OD_Documents/_R/BBATest_gcps/"     # path to the files
+file1     <- "na_13_ortho_eval.csv"       # block47 1B files
+inFile1 <- paste(filePath1, file1, sep = "")
+myData1 <- read.table(inFile1, header=TRUE, sep = ",")	#read the inFile as a table. 
+
+rptConf <-(0.90)
+
+##################
+# write Data to arrays
+##################
+
+xAdj  <- c(myData1 $diff.x)
+yAdj  <- c(myData1 $diff.y)
+
+
+##################
+# make Ellipses
+##################
+#NOTE: Ellipses are not using rptConf for determining the confidence range
+
+adj_el <- dataEllipse (x= xAdj, y= yAdj, levels=c(0.9, 0.95), draw=FALSE)
+
+##################
+# Plot Parameters
+##################
+
+xRange <- c(-8, 8)
+yRange <- c(-8, 8)
+xLabel <-  ("Easting offset (m)")
+yLabel <-  ("Northing offset (m)")
+Title  <-  ("Map Accuracy: Measured from Orthos")
+
+op <- par(mfrow = c(1, 1), # 1 x 1 pictures on one plot
+          pty = "s")       # square plotting region, independent of device size
+pltColor <- c("blue", "green4", "ivory3", "gray", "black")
+# color key-->[1]raw, [2]adj, [3]arrows, [4]grid, [5]x=0, y=0  
+
+
+##################
+# Plot
+##################
+
+plot  (xAdj, yAdj, xlim=xRange, ylim = yRange,  col= pltColor[2], pch= 16, cex= 0.6, 
+      xlab= xLabel, ylab= yLabel, main= Title)
+
+   #######
+   # elipse
+lines(adj_el $'0.9', col= pltColor[2])
+
+
+   #######
+   # grid
+abline(h = min(xRange):max(xRange), v = min(yRange):max(yRange), col = pltColor[4], lty = 3)
+abline(h = 0, v = 0, col = pltColor[5], lty = 1)
+
+   ###############
+   # Center points
+points (mean (xAdj), mean (yAdj), col= pltColor[2], lwd= 2, pch= 3, cex= 4)
+
+  ########
+  # Legend
+
+  # get radial values
+rAdjAll <- sqrt(xAdj^2 + yAdj^2)
+rAdjConf <- signif(quantile(rAdjAll, rptConf),3)
+
+
+  # make label
+legAdj <- paste("adj  - ", rAdjConf, "(m) at 90% confidence", sep="")
+
+legCornerX <- min(xRange)
+legCornerY <- max(yRange)
+legend(legCornerX, legCornerY, c(legAdj), 
+	col = c(pltColor[1],pltColor[2]), text.col = pltColor[5], lty = c(1, 1, 1, 1), lwd = c(1,1,1,1,1), pch = c(NA, NA, NA, NA),
+	merge = TRUE, bg = "gray90")
+d
+
+
+##################
+# Data Statistics
+##################
+
+
+mean (xAdjAll)
+mean (yAdjAll)
+quantile (rAdjAll, 0.90)
+
+
+
+

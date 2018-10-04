@@ -1,0 +1,155 @@
+###############################
+# Plot 1B - Pointing Accuracy for 2 blocks
+# Before and After BBA
+###############################
+
+##########################################################################################
+#
+# Upgrades: 
+#
+##########################################################################################
+
+
+##################
+# Files and Data
+#
+# Note: 
+##################
+filePath1 <- "C:/temp_working/bba/block46/"      # path to the files
+filePath2 <- "C:/temp_working/bba/block46/"      # path to the files
+file1     <- "image_list.1.objPt.csv" # block46 files
+file2     <- "image_list.objPt.csv"   # block46 files  
+inFile1 <- paste(filePath1, file1, sep = "")
+myData1 <- read.table(inFile1, header=TRUE, sep = ",")	#read the inFile as a table. 
+inFile2 <- paste(filePath2, file2, sep = "")
+myData2 <- read.table(inFile2, header=TRUE, sep = ",")	#read the inFile as a table. 
+
+rptConf <-c(0.50, 0.80, 0.90, 0.95, 1.0)
+
+
+lon11<-c()
+lat11<-c()
+lon12<-c()
+lat12<-c()
+lon13<-c()
+lat13<-c()
+lon14<-c()
+lat14<-c()
+lon15<-c()
+lat15<-c()
+
+lon21 <-c()
+lat21 <-c()
+lon22 <-c()
+lat22 <-c()
+lon23 <-c()
+lat23 <-c()
+lon24 <-c()
+lat24 <-c()
+lon25 <-c()
+lat25 <-c()
+
+##################
+# write Data to arrays
+##################
+x1   <- c(myData1 $LON)
+y1   <- c(myData1 $LAT)
+dZ1  <- c(myData1 $DELTA_Z)
+
+x2   <- c(myData2 $LON)
+y2   <- c(myData2 $LAT)
+dZ2  <- c(myData2 $DELTA_Z)
+
+
+###################
+# Break into pieces
+###################
+
+quant1 <- quantile (dZ1, rptConf, names= FALSE)
+
+for (i in 1: length(dZ1)) {
+  if      (dZ1[i] < quant1[1]){
+    lon11 <- append (lon11, x1[i])
+    lat11 <- append (lat11, y1[i])
+  }
+  else if (dZ1[i] < quant1[2]){
+    lon12 <- append (lon12, x1[i])
+    lat12 <- append (lat12, y1[i])
+  }
+  else if (dZ1[i] < quant1[3]){
+    lon13 <- append (lon13, x1[i])
+    lat13 <- append (lat13, y1[i])
+  }
+  else if (dZ1[i] < quant1[4]){
+    lon14 <- append (lon14, x1[i])
+    lat14 <- append (lat14, y1[i])
+  }
+  else if (dZ1[i] < quant1[5]){
+    lon15 <- append (lon15, x1[i])
+    lat15 <- append (lat15, y1[i])
+  }
+} #end i pieces
+
+
+quant2 <- quantile (dZ2, rptConf, names= FALSE)
+
+for (i in 1: length(dZ2)) {
+  if      (dZ2[i] < quant2[1]){
+    lon21 <- append (lon21, x2[i])
+    lat21 <- append (lat21, y2[i])
+  }
+  else if (dZ2[i] < quant2[2]){
+    lon22 <- append (lon22, x2[i])
+    lat22 <- append (lat22, y2[i])
+  }
+  else if (dZ2[i] < quant2[3]){
+    lon23 <- append (lon23, x2[i])
+    lat23 <- append (lat23, y2[i])
+  }
+  else if (dZ2[i] < quant2[4]){
+    lon24 <- append (lon24, x2[i])
+    lat24 <- append (lat24, y2[i])
+  }
+  else if (dZ2[i] < quant2[5]){
+    lon25 <- append (lon25, x2[i])
+    lat25 <- append (lat25, y2[i])
+  }
+} #end i pieces
+
+
+
+##################
+# Plot Parameters
+##################
+
+xRange <- c(-8, 8)
+yRange <- c(-8, 8)
+xLabel <-  ("Longitude")
+yLabel <-  ("Latitude")
+Title  <-  ("Vertical Residuals")
+
+op <- par(mfrow = c(1, 2), # 1 x 1 pictures on one plot
+      pty = "s")       # square plotting region, independent of device size
+
+pltColor <- c("chartreuse3", "chartreuse", "yellow", "darkorange", "red")
+
+
+
+
+##################
+# Plot
+##################
+
+
+plot  (lon11, lat11, col= pltColor[1], pch= 16, cex= 0.4, xlab= xLabel, ylab= yLabel, main= paste(Title, file1 , sep=" "))
+points(lon12, lat12, col= pltColor[2], pch= 16, cex= 0.4)
+points(lon13, lat13, col= pltColor[3], pch= 16, cex= 0.6)
+points(lon14, lat14, col= pltColor[4], pch= 16, cex= 0.4)
+points(lon15, lat15, col= pltColor[5], pch= 16, cex= 0.4)
+
+plot  (lon21, lat21, col= pltColor[1], pch= 16, cex= 0.4, xlab= xLabel, ylab= yLabel, main= paste(Title, file2, sep=" "))
+points(lon22, lat22, col= pltColor[2], pch= 16, cex= 0.4)
+points(lon23, lat23, col= pltColor[3], pch= 16, cex= 0.6)
+points(lon24, lat24, col= pltColor[4], pch= 16, cex= 0.4)
+points(lon25, lat25, col= pltColor[5], pch= 16, cex= 0.4)
+
