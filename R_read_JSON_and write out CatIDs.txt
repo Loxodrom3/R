@@ -1,0 +1,21 @@
+library("rjson") 
+filePrefix <- "1_" # this will be appended with "mssol.json"
+json_file <- paste ("Q:/Public Drop/", filePrefix,"mssol.json", sep="")
+json_data <- fromJSON(file=json_file)
+
+x<-numeric()
+
+for (i in 1:100000) {
+	x[i] <- json_data $features[[i]]$properties$CATALOG_ID
+} #end for i
+
+#x <- unique(x)
+x <- sort (x)
+
+
+zz <- file(paste(filePrefix,"_CatID.txt",sep=""), "w")  # open an output file connection.  
+# Location is C:\Users\jproctor\Documents
+cat(x, sep = "\n", file = zz)
+# cat("One more line\n", sep = ",", file = zz)
+close(zz)
+
