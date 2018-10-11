@@ -1,0 +1,7 @@
+c<-1:360
+radius <- 35
+
+a <- sin(c*pi/180)
+b <- cos(c*pi/180)
+
+plot (radius*a, radius*b)

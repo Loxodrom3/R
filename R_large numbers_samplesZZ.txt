@@ -1,0 +1,48 @@
+# this script reads a .csv with Off Nadir Angle (ONA) as one of the fields
+# the .csv is read into a table
+# values are declared for the DEM LE90 and Satellite pointing error
+# then the ONA is modeled with the DEM LE90 and Sat90 to generate a predicted error
+
+xRange <- c(0, 30)						# using xRange to set the x axis limits of xlim...
+reportPercentages <- c(.50, .90, .95, .99999)			# used for the quantile report %'s
+
+stD = 5/2.1460 	# the stDev for the rnorm function
+
+numRND   = 50	# the number of Random Numbers or images or reading going into the sample
+numSamps = 1000	# the number of samples for each set of numRND
+
+mx <- numeric()
+
+z  <- 1:(numRND*numSamps) 
+dim(z) <- c(numRND,numSamps)
+
+# Make array
+
+for (i in 1:numRND) {
+	for (j in 1:numSamps) {
+		temp <- rnorm(i,0,stD)
+		z[i,j] <- sum(temp)/length(temp)
+	}
+	mx[i] <- max(z[i,])
+}
+
+# write array
+
+
+x_Array <- c(1:numRND*numSamps)
+y_Array <- c(1:numRND*numSamps)
+a = 1
+
+for (i in 1:numRND) {
+	for (j in 1:numSamps) {
+		x_Array[a] <- i				
+		y_Array[a] <- z[i,j] 
+		a <- a+1
+	}
+}
+
+plot (x_Array, y_Array)
+# plot ( c(1:numRND),mx)
+
+numRND
+quantile (z[numRND,], c(.50, .90, .95, .99999))

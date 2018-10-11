@@ -1,0 +1,100 @@
+# Update the Description
+# 
+# values are declared for the DEM LE90 and Satellite pointing error
+# then the ONA is modeled with the DEM LE90 and Sat90 to generate a predicted error
+
+numSamps = 50	# i: the number of Random Numbers or images or readings going into the sample
+numTimes = 100	# j: the number of times we re-visit a dataset to measure numSamps from the data
+
+
+hiReportPercentages <- c(0.95)			# used for the quantile report %'s
+loReportPercentages <- c(0.05)
+mainTitile <- paste( "This is the Title; n=", numTimes, sep=" ")
+xAxisLabel = "number of samples per image"
+yAxisLabel = "Calculated CE90"
+
+yRange <- c(0, 10)				# using xRange to set the x axis limits of xlim...
+SatCE90 = 5
+StDevSatx = SatCE90 / 1.6449
+bias = 0
+
+RMSExni  <- numeric() # array for ninetyth of RMSExy
+Qnt90xni <- numeric() # array for ninetyth of Quantile
+stDEVxni <- numeric() # array for ninetyth of stDevxy
+
+RMSExte <- numeric() # array for tenth of RMSExy
+Qnt90xte <- numeric() # array for tenth of Quantile
+stDEVxte<- numeric() # array for tenth of stDevxy
+
+RMSEx  <- numeric() # array for RMSExy
+Pct90  <- numeric() # array for 90th Percentile
+stDEVx <- numeric()
+
+CE90RMSEx      <- 1:(numSamps*numTimes) 
+dim(CE90RMSEx) <- c(numSamps,numTimes)
+
+CE90stDEVx     <- 1:(numSamps*numTimes) 
+dim(CE90stDEVx)<- c(numSamps,numTimes)
+
+Qnt90x         <- 1:(numSamps*numTimes) 
+dim(Qnt90x)     <- c(numSamps,numTimes)
+
+
+# Populate arrays
+
+for (i in 1:numSamps) {
+	for (j in 1:numTimes) {
+		sat_x  <- rnorm(i,bias,StDevSatx)
+		
+		RMSEx  <- sqrt(sum((sat_x)^2)/(length(sat_x))) # I had length-1 , but changes it back ot length
+
+		stDEVx<-  sd(sat_x)
+
+		CE90RMSEx [i,j] <- RMSEx * 1.6449
+		CE90stDEVx[i,j] <- stDEVx* 1.6449
+		Qnt90x    [i,j] <- quantile(abs(sat_x), 0.90)
+
+	} # End for j
+
+} # End for i
+
+# write array
+
+
+ x_Array <- c(1:numSamps*numTimes)
+ y_Array <- c(1:numSamps*numTimes)
+ a = 1
+
+ for (i in 2:numSamps) {
+ 	for (j in 1:numTimes) {
+		x_Array[a] <- i				
+		y_Array[a] <- CE90RMSEx[i,j] 
+		a <- a+1
+	}  # End for j
+	
+	RMSExni  [i]= quantile(CE90RMSEx [i,], hiReportPercentages)
+	Qnt90xni [i]= quantile(Qnt90x    [i,], hiReportPercentages)
+	stDEVxni [i]= quantile(CE90stDEVx[i,], hiReportPercentages)
+
+	RMSExte  [i]= quantile(CE90RMSEx [i,], loReportPercentages)
+	Qnt90xte [i]= quantile(Qnt90x    [i,], loReportPercentages)
+	stDEVxte [i]= quantile(CE90stDEVx[i,], loReportPercentages)
+
+}  # End for i
+
+
+plot (x_Array, y_Array, xlab = xAxisLabel, ylab = yAxisLabel, col = "blue", ylim = yRange, cex = 0.1)
+title (mainTitile)
+legend(10, 2, c("RMSEx @ 90%", "Quantile 90 x  @ 90%", "StDEVx @ 90%"), 
+	col = c(4, 5, 6), text.col = "green4", lty = c(1, 1, 1), pch = c(NA, NA, NA),
+	merge = TRUE, bg = "gray90")
+
+lines ( c(1:numSamps),RMSExni, col = 4)
+lines ( c(1:numSamps),Qnt90xni, col = 5)
+lines ( c(1:numSamps),stDEVxni,col = 6)
+
+lines ( c(1:numSamps),RMSExte, col = 4)
+lines ( c(1:numSamps),Qnt90xte, col = 5)
+lines ( c(1:numSamps),stDEVxte,col = 6)
+
+# END

@@ -1,0 +1,52 @@
+# this script reads a .csv with Off Nadir Angle (ONA) as one of the fields
+# the .csv is read into a table
+# values are declared for the DEM LE90 and Satellite pointing error
+# then the ONA is modeled with the DEM LE90 and Sat90 to generate a predicted error
+
+inFile <- "C:/temp_working/dragonfly/SaudiQ313_lvl15.csv"  	# indentify the input file for reading
+
+bins = 100							# declare the number of Bins for the histogram
+xRange <- c(0, 30)						# using xRange to set the x axis limits of xlim...
+reportPercentages <- c(.50, .90, .95, .99999)			# used for the quantile report %'s
+
+
+SatCE90 = 3
+DemLE90 = 4							# declare the vertical accuracy of the DEM	
+
+StDevSat = SatCE90 / 2.1460   
+StDevz   = DemLE90 / 1.6449					# convert LE90 to Standard Deviation (z) of DEM - Assumes normal gausian distribution
+
+
+# myData <- read.table(inFile, header=TRUE, sep = ",")		#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+
+##############
+
+ONA_Array <- c(myData $ONA)				
+
+# Model errors
+vert_e    <- rnorm(length(ONA_Array),0,StDevz)
+sat_x     <- rnorm(length(ONA_Array),0,StDevSat)
+sat_y     <- rnorm(length(ONA_Array),0,StDevSat)
+sat_e     <- sqrt(sat_x^2 + sat_y^2)				# Sat_e as a radial distance of the x and y component
+terr_disp <- vert_e*tan(ONA_Array*(pi/180))			# horizontal error is the vertical error from the DEM times the tangent of the ONA (values for tan need to be in radians, so we use ona*pi/180 to go from degrees to radians
+terr_disp <- sqrt(terr_disp * terr_disp)			# provides the absolute value for Horizontal error.  This is a radial error, there can not be negatives
+
+horiz_e_total <- sqrt((sat_e*sat_e) + (terr_disp*terr_disp))	# rss
+
+# Report
+quantile (ONA_Array, reportPercentages)
+
+quantile (sat_e, reportPercentages)
+
+quantile (sqrt(vert_e*vert_e), reportPercentages)		# sqrt(vert_e^2) to get the ABS() 
+
+quantile (terr_disp, reportPercentages)
+
+quantile (horiz_e_total, reportPercentages)
+
+SatCE90
+DemLE90
+
+hist (horiz_e_total, breaks=bins, density = 10, col="blue", angle = 45, xlim = xRange)
+# rug  (horiz_e_total)
+

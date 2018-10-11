@@ -1,0 +1,30 @@
+# this script reads a .csv with Off Nadir Angle (ONA) as one of the fields
+# the .csv is read into a table
+# values are declared for the DEM LE90 and Satellite pointing error
+# then the ONA is modeled with the DEM LE90 and Sat90 to generate a predicted error
+
+inFile <- "C:/temp/xy.csv"  	# indentify the input file for reading
+
+bins = 100							# declare the number of Bins for the histogram
+xRange <- c(0, 30)						# using xRange to set the x axis limits of xlim...
+reportPercentages <- c(.50, .90, .95, .99999)			# used for the quantile report %'s
+
+
+SatCE90 = 5
+DemLE90 = 16							# declare the vertical accuracy of the DEM	
+
+StDevSat = SatCE90 / 2.1460   
+StDevz   = DemLE90 / 1.6449					# convert LE90 to Standard Deviation (z) of DEM - Assumes normal gausian distribution
+
+
+myData <- read.table(inFile, header=TRUE, sep = ",")		#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+
+##############
+
+x_Array <- c(myData $x)				
+y_Array <- c(myData $y)	
+
+plot (x_Array, y_Array)
+
+# rug  (horiz_e_total)
+

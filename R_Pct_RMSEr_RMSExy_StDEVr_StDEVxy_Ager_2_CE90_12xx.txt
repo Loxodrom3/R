@@ -1,0 +1,162 @@
+ # R_Pct_RMSEr_RMSExy_StDEVr_StDEVxy_Ager_2_CE90_12xx.txt
+# 
+# Added positioning of Legend reletave to X and Y Range
+# Adding Ager calculations
+
+numSamps = 30	# i: the number of Random Numbers or images or readings going into the sample  // end of x range
+numTimes = 5000	# j: the number of times we re-visit a dataset to measure numSamps from the data
+
+
+hiReportPercentages <- c(0.95)			# used for the quantile report %'s
+loReportPercentages <- c(0.05)
+mainTitile <- paste( "Range of 90% CI for CE90 by number of samples per image: n=", numTimes, sep=" ")
+subTitle   <- paste("Blue dots: CE90RMSEr;    Red dots: QNT90r")
+xAxisLabel = "number of samples per image"
+yAxisLabel = "Calculated CE90"
+
+# Ranges for graphing
+yRange <- c(0, 10)				# using xRange to set the x axis limits of xlim...
+startX = 2					# start of x range.  usually 2
+
+# Satellite stDEV and bias
+SatCE90 = 3.5
+StDevSatx = SatCE90 / 2.1460
+StDevSaty = SatCE90 / 2.1460
+xBias = 0
+yBias = 0
+
+#Legend Placement
+legCornerX = startX+((0.6)*(numSamps - startX))
+legCornerY = min(yRange)+((0.25)*(max(yRange)-min(yRange)))
+
+RMSErhi  <- numeric() # array for ninetyth of RMSEr
+RMSExyhi <- numeric() # array for ninetyth of RMSExy
+Qnt90rhi <- numeric() # array for ninetyth of Quantile
+stDEVxyhi<- numeric() # array for ninetyth of stDevxy
+stDEVrhi <- numeric() # array for ninetyth of stDevr
+Agerhi   <- numeric() # array for ninetyth of Ager
+
+RMSErlo  <- numeric() # array for tenth of RMSEr
+RMSExylo <- numeric() # array for tenth of RMSExy
+Qnt90rlo <- numeric() # array for tenth of Quantile
+stDEVxylo<- numeric() # array for tenth of stDevxy
+stDEVrlo <- numeric() # array for tenth of stDevr
+Agerlo   <- numeric() # array for tenth of Ager
+
+RMSEr  <- numeric() # array for RMSEr
+RMSExy <- numeric() # array for RMSExy
+Pct90  <- numeric() # array for 90th Percentile
+stDEVxy<- numeric()
+stDEVr <- numeric()
+
+CE90RMSExy      <- 1:(numSamps*numTimes) 
+dim(CE90RMSExy) <- c(numSamps,numTimes)
+
+CE90RMSEr       <- 1:(numSamps*numTimes) 
+dim(CE90RMSEr)  <- c(numSamps,numTimes)
+
+CE90stDEVxy     <- 1:(numSamps*numTimes) 
+dim(CE90stDEVxy)<- c(numSamps,numTimes)
+
+CE90stDEVr     <- 1:(numSamps*numTimes) 
+dim(CE90stDEVr)<- c(numSamps,numTimes)
+
+Qnt90r         	<- 1:(numSamps*numTimes) 
+dim(Qnt90r)     <- c(numSamps,numTimes)
+
+CE90Ager	<- 1:(numSamps*numTimes) 
+dim(CE90Ager)	<- c(numSamps,numTimes)
+
+# Populate arrays
+
+for (i in startX:numSamps) {
+	for (j in 1:numTimes) {
+		sat_x  <- rnorm(i,xBias,StDevSatx)
+		sat_y  <- rnorm(i,yBias,StDevSaty)
+		sat_r  <- sqrt(sat_x^2 + sat_y^2)
+
+		# calculate mean for each horizontal axis  (x and y)
+		# Used for Ager
+		sat_x_mean <- sum(sat_x)/length(sat_x)		# mean error for x axis
+		sat_y_mean <- sum(sat_y)/length(sat_y)		# mean error for y axis
+		horiz_bias <- sqrt(sat_x_mean^2 + sat_y_mean^2)  # horiz bias - radial error
+		
+		RMSEx  <- sqrt(sum((sat_x)^2)/(length(sat_x))) # I had length-1 , but changes it back ot length
+		RMSEy  <- sqrt(sum((sat_y)^2)/(length(sat_y)))
+
+		RMSExy <- (RMSEx+RMSEy)/2
+		RMSEr  <- sqrt(sum((sat_r)^2)/(length(sat_r)))
+		stDEVxy<- (sd(sat_x)+sd(sat_y))/2		# 
+
+		CE90RMSExy [i,j] <- RMSExy * 2.1460
+		CE90RMSEr  [i,j] <- RMSEr  * 1.5175
+		CE90stDEVxy[i,j] <- stDEVxy* 2.1460
+		Qnt90r     [i,j] <- quantile(sat_r, 0.90)
+		# Ager
+		if ((horiz_bias / stDEVxy) < 0.1) 
+			CE90Ager[i,j] <- stDEVxy * 2.1460
+		else if ((horiz_bias / stDEVxy) < 3)
+			CE90Ager[i,j] <- (2.1272*stDEVxy)+(0.1674*horiz_bias)+(0.3623*(horiz_bias^2/stDEVxy))-(0.055*(horiz_bias^3/stDEVxy^2)) 
+		else
+			CE90Ager[i,j] <- (0.986*horiz_bias)+(1.4548*stDEVxy)
+
+
+	} # End for j
+} # End for i
+
+# write array
+
+
+ x_Array <- c(1:numSamps*numTimes)
+ y_Array <- c(1:numSamps*numTimes)
+ x_Array2<- c(1:numSamps*numTimes)
+ y_Array2<- c(1:numSamps*numTimes)
+ a = 1
+
+ for (i in startX:numSamps) {
+ 	for (j in 1:numTimes) {
+		x_Array[a] <- i				
+		y_Array[a] <- CE90RMSEr[i,j] 
+		x_Array2[a] <- i+ 0.1		#added +0.1 to i to give some seperation in the x axis for plotting array1 and array2				
+		y_Array2[a] <- Qnt90r[i,j] 
+		a <- a+1
+	}  # End for j
+	
+	RMSErhi   [i]= quantile(CE90RMSEr  [i,], hiReportPercentages)
+	RMSExyhi  [i]= quantile(CE90RMSExy [i,], hiReportPercentages)
+	Qnt90rhi  [i]= quantile(Qnt90r     [i,], hiReportPercentages)
+	stDEVxyhi [i]= quantile(CE90stDEVxy[i,], hiReportPercentages)
+	Agerhi    [i]= quantile(CE90Ager   [i,], hiReportPercentages)
+
+	RMSErlo   [i]= quantile(CE90RMSEr  [i,], loReportPercentages)
+	RMSExylo  [i]= quantile(CE90RMSExy [i,], loReportPercentages)
+	Qnt90rlo  [i]= quantile(Qnt90r     [i,], loReportPercentages)
+	stDEVxylo [i]= quantile(CE90stDEVxy[i,], loReportPercentages)
+	Agerlo    [i]= quantile(CE90Ager   [i,], loReportPercentages)
+
+}  # End for i
+
+
+plot (x_Array, y_Array, xlab = xAxisLabel, ylab = yAxisLabel, col = "blue", ylim = yRange, cex = 0.3)
+points (x_Array2, y_Array2, col = "red", cex = 0.1)
+title (mainTitile, sub = subTitle)
+legend(legCornerX, legCornerY, c("RMSEr @ 90% CI", "RMSExy @ 90% CI", "Quantile_r 90  @ 90% CI", "StDEVxy @ 90% CI", "Ager @ 90% CI"), 
+	col = c(3, 4, 5, 6, 8), text.col = "green4", lty = c(1, 1, 1, 1), pch = c(NA, NA, NA, NA),
+	merge = TRUE, bg = "gray90")
+
+lines ( c(startX,numSamps), c(SatCE90,SatCE90), col="gray", lty="dotted")
+
+lines ( c(1:numSamps),RMSErhi , col = 3)
+lines ( c(1:numSamps),RMSExyhi, col = 4)
+lines ( c(1:numSamps),Qnt90rhi, col = 5)
+lines ( c(1:numSamps),stDEVxyhi,col = 6)
+lines ( c(1:numSamps),Agerhi,   col = 8)
+
+lines ( c(1:numSamps),RMSErlo , col = 3)
+lines ( c(1:numSamps),RMSExylo, col = 4)
+lines ( c(1:numSamps),Qnt90rlo, col = 5)
+lines ( c(1:numSamps),stDEVxylo,col = 6)
+lines ( c(1:numSamps),Agerlo,   col = 8)
+
+# END
+

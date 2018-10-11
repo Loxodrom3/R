@@ -1,0 +1,40 @@
+bins = 330
+xRange <- c(0,10)
+satCE90 = 5
+stDevSat = satCE90 / 2.1460
+num = 1000000
+
+sat_x  <- rnorm(num,0,stDevSat)
+sat_y  <- rnorm(num,0,stDevSat)
+sat_e  <- sqrt(sat_x^2 + sat_y^2)
+sd_xy  <- (sd(sat_x)+sd(sat_y))/2
+
+# quantile (sat_x, c(.50, .90, .95, .9999))
+quantile (sat_e, c(.50, .90, .95, .9999))
+# sd(sat_x)
+# sd(sat_y)
+sdxy = (sd(sat_x)+sd(sat_y))/2
+sdxy*2.1460
+
+# iffy below here
+sd(sat_e)
+tmp <- sqrt(sat_e^2)
+rmsSat_e <- sqrt(sum(tmp)/length(tmp))
+rmsSat_e
+sum(sat_e)/ length(sat_e)
+
+pl <- sat_e
+
+hist (pl, breaks = bins, xlim = xRange)
+
+points(quantile(pl, 0.1),0, col="red")
+points(quantile(pl, 0.2),0, col="red")
+points(quantile(pl, 0.3),0, col="red")
+points(quantile(pl, 0.4),0, col="red")
+points(quantile(pl, 0.5),0, col="green")
+points(quantile(pl, 0.6),0, col="red")
+points(quantile(pl, 0.7),0, col="red")
+points(quantile(pl, 0.8),0, col="red")
+points(quantile(pl, 0.9),0, col="red")
+
+quantile(pl, seq(0, 1, by=.1))

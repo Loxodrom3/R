@@ -1,0 +1,98 @@
+# Update the Description
+# 
+# values are declared for the DEM LE90 and Satellite pointing error
+# then the ONA is modeled with the DEM LE90 and Sat90 to generate a predicted error
+
+numSamps = 50	# i: the number of Random Numbers or images or readings going into the sample
+numTimes = 10000	# j: the number of times we re-visit a dataset to measure numSamps from the data
+
+yRange <- c(0, 10)				# using xRange to set the x axis limits of xlim...
+reportPercentages <- c(0.90)			# used for the quantile report %'s
+xAxisLabel = "number of samples per image"
+yAxisLabel = "Calculated CE90"
+
+SatCE90 = 5
+StDevSat = SatCE90 / 2.1460
+bias = 0
+
+mx <- numeric() # array for max
+RMSErni  <- numeric() # array for ninetyth of RMSEr
+RMSExyni <- numeric() # array for ninetyth of RMSExy
+Qnt90rni <- numeric() # array for ninetyth of RMSExy
+RMSEr <- numeric() # array for RMSEr
+RMSExy <- numeric() # array for RMSExy
+Pct90 <- numeric () # array for 90th Percentile
+
+CE90RMSExy      <- 1:(numSamps*numTimes) 
+dim(CE90RMSExy) <- c(numSamps,numTimes)
+
+CE90RMSEr       <- 1:(numSamps*numTimes) 
+dim(CE90RMSEr)  <- c(numSamps,numTimes)
+
+CE90stDev_r     <- 1:(numSamps*numTimes) 
+dim(CE90stDev_r)<- c(numSamps,numTimes)
+
+Qnt90r         <- 1:(numSamps*numTimes) 
+dim(Qnt90r)     <- c(numSamps,numTimes)
+
+# Populate arrays
+
+for (i in 2:numSamps) {
+	for (j in 1:numTimes) {
+		sat_x  <- rnorm(i,bias,StDevSat)
+		sat_y  <- rnorm(i,bias,StDevSat)
+		sat_r  <- sqrt(sat_x^2 + sat_y^2)
+		
+		RMSEx  <- sqrt(sum((sat_x)^2)/length(sat_x)) # I had length-1 , but changes it back ot length
+		RMSEy  <- sqrt(sum((sat_y)^2)/length(sat_y))
+		RMSEr  <- sqrt(sum((sat_r)^2)/length(sat_r))
+
+		RMSExy <- (RMSEx+RMSEy)/2
+		stDevxy<- (sd(sat_x)+sd(sat_y))/2
+		stDevr <- sd(sat_r) 
+
+		CE90RMSExy [i,j] <- RMSExy * 2.1460
+		CE90RMSEr  [i,j] <- RMSEr  * 1.5175
+		CE90stDev_r[i,j] <- sd(sat_r) * 1.5175
+		Qnt90r     [i,j] <- quantile(sat_r, 0.90)
+
+#		x[i,j] <- sat_avgx
+#		y[i,j] <- sat_avgy
+#		z[i,j] <- sqrt(sat_avgx^2 + sat_avgy^2)
+		
+	} # End for j
+
+} # End for i
+
+# write array
+
+
+ x_Array <- c(1:numSamps*numTimes)
+
+ y_Array <- c(1:numSamps*numTimes)
+
+ a = 1
+
+ for (i in 2:numSamps) {
+ 	for (j in 1:numTimes) {
+		x_Array[a] <- i				
+		y_Array[a] <- CE90RMSEr[i,j] 
+		a <- a+1
+	}  # End for j
+	
+	RMSErni  [i]= quantile(CE90RMSEr[i,], reportPercentages)
+	RMSExyni [i]= quantile(CE90RMSExy[i,], reportPercentages)
+	Qnt90rni [i]= quantile(Qnt90r[i,], reportPercentages)
+}  # End for i
+
+
+plot (x_Array, y_Array, xlab = xAxisLabel, ylab = yAxisLabel, col = "blue", ylim = yRange, cex = 0.1)
+lines ( c(1:numSamps),RMSErni , col = "red")
+lines ( c(1:numSamps),RMSExyni, col = "green")
+lines ( c(1:numSamps),Qnt90rni, col = "orange")
+
+
+#numSamps
+#quantile (z[numSamps,], c(.50, .90, .95, .99999))
+#ni[1]
+#ni

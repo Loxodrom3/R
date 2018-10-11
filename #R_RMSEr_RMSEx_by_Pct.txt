@@ -1,0 +1,52 @@
+#R_RMSEr_RMSEx_by_Pct
+# Update the Description
+# 
+
+numTimes = 5000	# j: the number of times we re-visit a dataset to measure numSamps from the data
+
+reportPercentages <- seq(0, 1, by=0.01)			# used for the quantile report %'s
+
+# Graph Lables
+#
+mainTitile <- paste( "This is the Title; n=", numTimes, sep=" ")
+xAxisLabel = "percentile"
+yAxisLabel = "reported value"
+
+# Graph range
+#
+yRange <- c(0, 10)				# using xRange to set the x axis limits of xlim...
+
+SatCE90 = 5
+StDevSatx = SatCE90 / 2.1460
+StDevSaty = SatCE90 / 2.1460
+bias = 0
+
+sat_x  <- rnorm(numTimes,bias,StDevSatx)
+sat_y  <- rnorm(numTimes,bias,StDevSaty)
+sat_r  <- sqrt(sat_x^2 + sat_y^2)
+		
+pct_x = quantile (abs(sat_x), reportPercentages)
+pct_r = quantile (    sat_r,  reportPercentages)
+
+# write array
+x_Array <- c(1:length(reportPercentages))
+pct_x_Array <- c(1:length(reportPercentages))
+pct_r_Array <- c(1:length(reportPercentages))
+
+for (i in 1:length(reportPercentages)) {
+	x_Array[i]     <- reportPercentages[i]
+	pct_x_Array[i] <- pct_x[i]
+	pct_r_Array[i] <- pct_r[i]
+} # end i
+
+plot (x_Array, pct_x_Array, xlab = xAxisLabel, ylab = yAxisLabel, col = "blue", ylim = yRange, cex = 0.3)
+lines ( reportPercentages,pct_x_Array , col = 3)
+lines ( reportPercentages,pct_r_Array, col = 4)
+
+title (mainTitile)
+legend(.2, 8, c("Sat_r", "Sat_x"), 
+	col = c(4, 3), text.col = "green4", lty = c(1, 1, 1, 1), pch = c(NA, NA, NA, NA),
+	merge = TRUE, bg = "gray90")
+
+
+# END

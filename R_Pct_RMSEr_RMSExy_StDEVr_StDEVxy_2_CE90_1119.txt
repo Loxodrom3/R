@@ -1,0 +1,133 @@
+# Update the Description
+# 
+# values are declared for the DEM LE90 and Satellite pointing error
+# then the ONA is modeled with the DEM LE90 and Sat90 to generate a predicted error
+
+numSamps = 30	# i: the number of Random Numbers or images or readings going into the sample
+numTimes = 10000	# j: the number of times we re-visit a dataset to measure numSamps from the data
+
+
+hiReportPercentages <- c(0.95)			# used for the quantile report %'s
+loReportPercentages <- c(0.05)
+mainTitile <- paste( "This is the Title; n=", numTimes, sep=" ")
+xAxisLabel = "number of samples per image"
+yAxisLabel = "Calculated CE90"
+
+yRange <- c(0, 10)				# using xRange to set the x axis limits of xlim...
+SatCE90 = 5
+StDevSatx = SatCE90 / 2.1460
+StDevSaty = SatCE90 / 2.1460
+bias = 0
+
+RMSErni  <- numeric() # array for ninetyth of RMSEr
+RMSExyni <- numeric() # array for ninetyth of RMSExy
+Qnt90rni <- numeric() # array for ninetyth of Quantile
+stDEVxyni<- numeric() # array for ninetyth of stDevxy
+stDEVrni<- numeric() # array for ninetyth of stDevr
+
+RMSErte  <- numeric() # array for tenth of RMSEr
+RMSExyte <- numeric() # array for tenth of RMSExy
+Qnt90rte <- numeric() # array for tenth of Quantile
+stDEVxyte<- numeric() # array for tenth of stDevxy
+stDEVrte <- numeric() # array for tenth of stDevr
+
+RMSEr  <- numeric() # array for RMSEr
+RMSExy <- numeric() # array for RMSExy
+Pct90  <- numeric() # array for 90th Percentile
+stDEVxy<- numeric()
+stDEVr <- numeric()
+
+CE90RMSExy      <- 1:(numSamps*numTimes) 
+dim(CE90RMSExy) <- c(numSamps,numTimes)
+
+CE90RMSEr       <- 1:(numSamps*numTimes) 
+dim(CE90RMSEr)  <- c(numSamps,numTimes)
+
+CE90stDEVxy     <- 1:(numSamps*numTimes) 
+dim(CE90stDEVxy)<- c(numSamps,numTimes)
+
+CE90stDEVr     <- 1:(numSamps*numTimes) 
+dim(CE90stDEVr)<- c(numSamps,numTimes)
+
+Qnt90r         <- 1:(numSamps*numTimes) 
+dim(Qnt90r)     <- c(numSamps,numTimes)
+
+# Populate arrays
+
+for (i in 2:numSamps) {
+	for (j in 1:numTimes) {
+		sat_x  <- rnorm(i,bias,StDevSatx)
+		sat_y  <- rnorm(i,bias,StDevSaty)
+		sat_r  <- sqrt(sat_x^2 + sat_y^2)
+		
+		RMSEx  <- sqrt(sum((sat_x)^2)/(length(sat_x))) # I had length-1 , but changes it back ot length
+		RMSEy  <- sqrt(sum((sat_y)^2)/(length(sat_y)))
+
+		RMSExy <- (RMSEx+RMSEy)/2
+		RMSEr  <- sqrt(sum((sat_r)^2)/(length(sat_r)))
+		stDEVxy<- (sd(sat_x)+sd(sat_y))/2
+#		stDEVr <- sd(sat_r) # StDev or radial Values w/o bias will provide LOW number
+
+		CE90RMSExy [i,j] <- RMSExy * 2.1460
+		CE90RMSEr  [i,j] <- RMSEr  * 1.5175
+		CE90stDEVxy[i,j] <- stDEVxy* 2.1460
+#		CE90stDEVr [i,j] <- stDEVr * 1.5175
+		Qnt90r     [i,j] <- quantile(sat_r, 0.90)
+
+	} # End for j
+} # End for i
+
+# write array
+
+
+ x_Array <- c(1:numSamps*numTimes)
+ y_Array <- c(1:numSamps*numTimes)
+ x_Array2<- c(1:numSamps*numTimes)
+ y_Array2<- c(1:numSamps*numTimes)
+ a = 1
+
+ for (i in 2:numSamps) {
+ 	for (j in 1:numTimes) {
+		x_Array[a] <- i				
+		y_Array[a] <- CE90RMSEr[i,j] 
+		x_Array2[a] <- i+0.1		#added +0.1 to i to give some seperation in the x axis for plotting array1 and array2				
+		y_Array2[a] <- Qnt90r[i,j] 
+		a <- a+1
+	}  # End for j
+	
+	RMSErni   [i]= quantile(CE90RMSEr  [i,], hiReportPercentages)
+	RMSExyni  [i]= quantile(CE90RMSExy [i,], hiReportPercentages)
+	Qnt90rni  [i]= quantile(Qnt90r     [i,], hiReportPercentages)
+	stDEVxyni [i]= quantile(CE90stDEVxy[i,], hiReportPercentages)
+#	stDEVrni  [i]= quantile(CE90stDEVr [i,], hiReportPercentages)
+
+	RMSErte   [i]= quantile(CE90RMSEr  [i,], loReportPercentages)
+	RMSExyte  [i]= quantile(CE90RMSExy [i,], loReportPercentages)
+	Qnt90rte  [i]= quantile(Qnt90r     [i,], loReportPercentages)
+	stDEVxyte [i]= quantile(CE90stDEVxy[i,], loReportPercentages)
+#	stDEVrte  [i]= quantile(CE90stDEVr [i,], loReportPercentages)
+
+}  # End for i
+
+
+plot (x_Array, y_Array, xlab = xAxisLabel, ylab = yAxisLabel, col = "blue", ylim = yRange, cex = 0.3)
+points (x_Array2, y_Array2, col = "red", cex = 0.1)
+title (mainTitile)
+legend(20, 2, c("RMSEr @ 90% CI", "RMSExy @ 90% CI", "Quantile 90  @ 90% CI", "StDEVxy @ 90% CI"), 
+	col = c(3, 4, 5, 6), text.col = "green4", lty = c(1, 1, 1, 1), pch = c(NA, NA, NA, NA),
+	merge = TRUE, bg = "gray90")
+
+lines ( c(1:numSamps),RMSErni , col = 3)
+lines ( c(1:numSamps),RMSExyni, col = 4)
+lines ( c(1:numSamps),Qnt90rni, col = 5)
+lines ( c(1:numSamps),stDEVxyni,col = 6)
+# lines ( c(1:numSamps),stDEVrni, col = 5)
+
+lines ( c(1:numSamps),RMSErte , col = 3)
+lines ( c(1:numSamps),RMSExyte, col = 4)
+lines ( c(1:numSamps),Qnt90rte, col = 5)
+lines ( c(1:numSamps),stDEVxyte,col = 6)
+# lines ( c(1:numSamps),stDEVrte, col = 5)
+
+RMSExyni - RMSExyte
+# END

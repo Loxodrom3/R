@@ -1,0 +1,31 @@
+c<-6*1:60
+radius <- 6
+
+a <- sin(c*pi/180)
+b <- cos(c*pi/180)
+
+plot (radius*a, radius*b)
+
+f<-15*1:24
+radius <- 3.2
+
+g <- sin(f*pi/180)
+h <- cos(f*pi/180)
+
+points (radius*g, radius*h)
+
+f<-30*1:12
+radius <- 1.5
+
+g <- sin(f*pi/180)
+h <- cos(f*pi/180)
+
+points (radius*g, radius*h)
+
+f<-30*1:12
+radius <- 1.25
+
+g <- sin(f*pi/180)
+h <- cos(f*pi/180)
+
+points (radius*g, radius*h)

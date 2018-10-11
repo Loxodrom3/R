@@ -1,0 +1,274 @@
+# R_ScatterPlot_Pct_RMSEr_RMSExy_StDEVr_StDEVxy_Ager_12xx.txt
+# 
+
+
+numSamps = 20	# i: the number of Random Numbers or images or readings going into the sample  // end of x range
+
+
+hiReportPercentages <- c(0.95)			# used for the quantile report %'s
+loReportPercentages <- c(0.05)
+mainTitle <- paste( "Various methods for CE90; n=", numSamps, sep=" ")
+xAxisLabel = "number of samples per image"
+yAxisLabel = "Calculated CE90"
+
+# Ranges for graphing
+yRange <- c(-8, 8)				# using xRange to set the x axis limits of xlim...
+xRange <- c(-8, 8)				# start of x range.  usually 2
+
+# Satellite stDEV and bias
+SatCE90 = 5
+StDevSatx = SatCE90 / 2.1460
+StDevSaty = SatCE90 / 2.1460
+xBias = 0
+yBias = 0
+
+#Legend Placement
+legCornerX = min(xRange)+((0.60)*(max(xRange)-min(xRange)))
+legCornerY = min(yRange)+((0.25)*(max(yRange)-min(yRange)))
+
+sat_x  <- rnorm(numSamps,xBias,StDevSatx)
+sat_y  <- rnorm(numSamps,yBias,StDevSaty)
+sat_r  <- sqrt(sat_x^2 + sat_y^2)
+
+# Calculate rmse, stdev, CE90, etc...
+
+	sat_x_mean <- sum(sat_x)/length(sat_x)		# mean error for x axis
+	sat_y_mean <- sum(sat_y)/length(sat_y)		# mean error for y axis
+	horiz_bias <- sqrt(sat_x_mean^2 + sat_y_mean^2)  # horiz bias - radial error
+	
+	RMSEx  <- sqrt(sum((sat_x)^2)/(length(sat_x)))  # 
+	RMSEy  <- sqrt(sum((sat_y)^2)/(length(sat_y)))
+
+	RMSExy <- (RMSEx+RMSEy)/2
+	RMSEr  <- sqrt(sum((sat_r)^2)/(length(sat_r)))
+	stDEVxy<- (sd(sat_x)+sd(sat_y))/2		# 
+
+	CE90RMSExy <- RMSExy * 2.1460
+	CE90RMSEr  <- RMSEr  * 1.5175
+	CE90stDEVxy<- stDEVxy* 2.1460
+	Qnt90r     <- quantile(sat_r, 0.90)
+	# Ager
+	if        ((horiz_bias / stDEVxy) < 0.1) {
+		CE90Ager <- stDEVxy * 2.1460
+	} else if ((horiz_bias / stDEVxy) < 3) {
+		CE90Ager <- (2.1272*stDEVxy)+(0.1674*horiz_bias)+(0.3623*(horiz_bias^2/stDEVxy))-(0.055*(horiz_bias^3/stDEVxy^2))
+	} else
+		CE90Ager <- (0.986*horiz_bias)+(1.4548*stDEVxy)
+
+
+##### Circles
+cirSpacing <- 2
+cir <- seq(0, 360, by=cirSpacing)
+
+	CE90AgerCirX    <-1:length(cir)
+	CE90AgerCirY    <-1:length(cir)
+	CE90RMSExyCirX  <-1:length(cir)
+	CE90RMSExyCirY  <-1:length(cir)
+	CE90RMSErCirX   <-1:length(cir)
+	CE90RMSErCirY   <-1:length(cir)
+	CE90stDEVxyCirX <-1:length(cir)
+	CE90stDEVxyCirY <-1:length(cir)
+	Qnt90rCirX      <-1:length(cir)
+	Qnt90rCirY      <-1:length(cir)
+
+
+for (pnts in 0:(360/cirSpacing)+1)  {
+	CE90AgerCirX[pnts]    <- sin(cir[pnts]*pi/180)* CE90Ager
+	CE90AgerCirY[pnts]    <- cos(cir[pnts]*pi/180)* CE90Ager
+
+	CE90RMSExyCirX[pnts]  <- sin(cir[pnts]*pi/180)* CE90RMSExy
+	CE90RMSExyCirY[pnts]  <- cos(cir[pnts]*pi/180)* CE90RMSExy
+
+	CE90RMSErCirX[pnts]   <- sin(cir[pnts]*pi/180)* CE90RMSEr
+	CE90RMSErCirY[pnts]   <- cos(cir[pnts]*pi/180)* CE90RMSEr
+
+#	CE90stDEVxyCirX[pnts] <- sin(cir[pnts]*pi/180)* CE90stDEVxy
+#	CE90stDEVxyCirY[pnts] <- cos(cir[pnts]*pi/180)* CE90stDEVxy
+
+	CE90stDEVxyCirX[pnts] <- xBias+sin(cir[pnts]*pi/180)* CE90stDEVxy
+	CE90stDEVxyCirY[pnts] <- yBias+cos(cir[pnts]*pi/180)* CE90stDEVxy# R_ScatterPlot_Pct_RMSEr_RMSExy_StDEVr_StDEVxy_Ager_12xx.txt
+# 
+
+
+numSamps = 20	# i: the number of Random Numbers or images or readings going into the sample  // end of x range
+
+
+hiReportPercentages <- c(0.95)			# used for the quantile report %'s
+loReportPercentages <- c(0.05)
+mainTitle <- paste( "Various methods for CE90; n=", numSamps, sep=" ")
+xAxisLabel = "number of samples per image"
+yAxisLabel = "Calculated CE90"
+
+# Ranges for graphing
+yRange <- c(-8, 8)				# using xRange to set the x axis limits of xlim...
+xRange <- c(-8, 8)				# start of x range.  usually 2
+
+# Satellite stDEV and bias
+SatCE90 = 5
+StDevSatx = SatCE90 / 2.1460
+StDevSaty = SatCE90 / 2.1460
+xBias = 0
+yBias = 0
+
+#Legend Placement
+legCornerX = min(xRange)+((0.60)*(max(xRange)-min(xRange)))
+legCornerY = min(yRange)+((0.25)*(max(yRange)-min(yRange)))
+
+sat_x  <- rnorm(numSamps,xBias,StDevSatx)
+sat_y  <- rnorm(numSamps,yBias,StDevSaty)
+sat_r  <- sqrt(sat_x^2 + sat_y^2)
+
+# Calculate rmse, stdev, CE90, etc...
+
+	sat_x_mean <- sum(sat_x)/length(sat_x)		# mean error for x axis
+	sat_y_mean <- sum(sat_y)/length(sat_y)		# mean error for y axis
+	horiz_bias <- sqrt(sat_x_mean^2 + sat_y_mean^2)  # horiz bias - radial error
+	
+	RMSEx  <- sqrt(sum((sat_x)^2)/(length(sat_x)))  # 
+	RMSEy  <- sqrt(sum((sat_y)^2)/(length(sat_y)))
+
+	RMSExy <- (RMSEx+RMSEy)/2
+	RMSEr  <- sqrt(sum((sat_r)^2)/(length(sat_r)))
+	stDEVxy<- (sd(sat_x)+sd(sat_y))/2		# 
+
+	CE90RMSExy <- RMSExy * 2.1460
+	CE90RMSEr  <- RMSEr  * 1.5175
+	CE90stDEVxy<- stDEVxy* 2.1460
+	Qnt90r     <- quantile(sat_r, 0.90)
+	# Ager
+	if        ((horiz_bias / stDEVxy) < 0.1) {
+		CE90Ager <- stDEVxy * 2.1460
+	} else if ((horiz_bias / stDEVxy) < 3) {
+		CE90Ager <- (2.1272*stDEVxy)+(0.1674*horiz_bias)+(0.3623*(horiz_bias^2/stDEVxy))-(0.055*(horiz_bias^3/stDEVxy^2))
+	} else
+		CE90Ager <- (0.986*horiz_bias)+(1.4548*stDEVxy)
+
+
+##### Circles
+cirSpacing <- 2
+cir <- seq(0, 360, by=cirSpacing)
+
+	CE90AgerCirX    <-1:length(cir)
+	CE90AgerCirY    <-1:length(cir)
+	CE90RMSExyCirX  <-1:length(cir)
+	CE90RMSExyCirY  <-1:length(cir)
+	CE90RMSErCirX   <-1:length(cir)
+	CE90RMSErCirY   <-1:length(cir)
+	CE90stDEVxyCirX <-1:length(cir)
+	CE90stDEVxyCirY <-1:length(cir)
+	Qnt90rCirX      <-1:length(cir)
+	Qnt90rCirY      <-1:length(cir)
+
+
+for (pnts in 0:(360/cirSpacing)+1)  {
+	CE90AgerCirX[pnts]    <- sin(cir[pnts]*pi/180)* CE90Ager
+	CE90AgerCirY[pnts]    <- cos(cir[pnts]*pi/180)* CE90Ager
+
+	CE90RMSExyCirX[pnts]  <- sin(cir[pnts]*pi/180)* CE90RMSExy
+	CE90RMSExyCirY[pnts]  <- cos(cir[pnts]*pi/180)* CE90RMSExy
+
+	CE90RMSErCirX[pnts]   <- sin(cir[pnts]*pi/180)* CE90RMSEr
+	CE90RMSErCirY[pnts]   <- cos(cir[pnts]*pi/180)* CE90RMSEr
+
+#	CE90stDEVxyCirX[pnts] <- sin(cir[pnts]*pi/180)* CE90stDEVxy
+#	CE90stDEVxyCirY[pnts] <- cos(cir[pnts]*pi/180)* CE90stDEVxy
+
+	CE90stDEVxyCirX[pnts] <- xBias+sin(cir[pnts]*pi/180)* CE90stDEVxy
+	CE90stDEVxyCirY[pnts] <- yBias+cos(cir[pnts]*pi/180)* CE90stDEVxy
+
+	Qnt90rCirX[pnts]      <- sin(cir[pnts]*pi/180)* Qnt90r
+	Qnt90rCirY[pnts]      <- cos(cir[pnts]*pi/180)* Qnt90r
+} # end for pnts
+
+
+
+##Plot
+plot (sat_x, sat_y, col = "blue", xlim=xRange, ylim = yRange, cex = 0.3, tcl=-0.5)
+title (mainTitle) 
+lines ( c(0,0), c(min(yRange),max(yRange)),   col=1)
+lines ( c(min(xRange),max(xRange)), c(0,0),   col=1)
+
+lines ( c( 5, 5), c(min(yRange),max(yRange)), col="gray", lty="dotted")
+lines ( c(-5,-5), c(min(yRange),max(yRange)), col="gray", lty="dotted")
+
+lines ( c(min(xRange),max(xRange)), c(5,5),   col="gray", lty="dotted")
+lines ( c(min(xRange),max(xRange)), c(-5,-5), col="gray", lty="dotted")
+
+	lines (CE90RMSErCirX,  CE90RMSErCirY,  col=3)
+	lines (CE90RMSExyCirX, CE90RMSExyCirY, col=4)
+	lines (Qnt90rCirX,     Qnt90rCirY,     col=5)
+	lines (CE90stDEVxyCirX,CE90stDEVxyCirY,col=6)
+	lines (CE90AgerCirX,   CE90AgerCirY,   col=8)
+
+## Legend
+legCornerX <- min(xRange)
+legCornerY <- max(yRange)
+legend(legCornerX, legCornerY, c("CE90RMSEr", "CE90RMSExy", "Qnt90r", "CE90stDEVxy", "CE90Ager"), 
+	col = c(3, 4, 5, 6, 8), text.col = "green4", lty = c(1, 1, 1, 1), pch = c(NA, NA, NA, NA),
+	merge = TRUE, bg = "gray90")
+
+##Report
+horiz_bias
+RMSEr
+RMSExy
+stDEVxy
+
+horiz_bias/stDEVxy
+CE90Ager
+CE90RMSExy 
+CE90RMSEr  
+CE90stDEVxy
+Qnt90r     
+
+length(CE90AgerCirX)
+
+# End
+
+
+	Qnt90rCirX[pnts]      <- sin(cir[pnts]*pi/180)* Qnt90r
+	Qnt90rCirY[pnts]      <- cos(cir[pnts]*pi/180)* Qnt90r
+} # end for pnts
+
+
+
+##Plot
+plot (sat_x, sat_y, col = "blue", xlim=xRange, ylim = yRange, cex = 0.3, tcl=-0.5)
+title (mainTitle) 
+lines ( c(0,0), c(min(yRange),max(yRange)),   col=1)
+lines ( c(min(xRange),max(xRange)), c(0,0),   col=1)
+
+lines ( c( 5, 5), c(min(yRange),max(yRange)), col="gray", lty="dotted")
+lines ( c(-5,-5), c(min(yRange),max(yRange)), col="gray", lty="dotted")
+
+lines ( c(min(xRange),max(xRange)), c(5,5),   col="gray", lty="dotted")
+lines ( c(min(xRange),max(xRange)), c(-5,-5), col="gray", lty="dotted")
+
+	lines (CE90RMSErCirX,  CE90RMSErCirY,  col=3)
+	lines (CE90RMSExyCirX, CE90RMSExyCirY, col=4)
+	lines (Qnt90rCirX,     Qnt90rCirY,     col=5)
+	lines (CE90stDEVxyCirX,CE90stDEVxyCirY,col=6)
+	lines (CE90AgerCirX,   CE90AgerCirY,   col=8)
+
+## Legend
+legCornerX <- min(xRange)
+legCornerY <- max(yRange)
+legend(legCornerX, legCornerY, c("CE90RMSEr", "CE90RMSExy", "Qnt90r", "CE90stDEVxy", "CE90Ager"), 
+	col = c(3, 4, 5, 6, 8), text.col = "green4", lty = c(1, 1, 1, 1), pch = c(NA, NA, NA, NA),
+	merge = TRUE, bg = "gray90")
+
+##Report
+horiz_bias
+RMSEr
+RMSExy
+stDEVxy
+
+horiz_bias/stDEVxy
+CE90Ager
+CE90RMSExy 
+CE90RMSEr  
+CE90stDEVxy
+Qnt90r     
+
+length(CE90AgerCirX)
+
+# End

@@ -1,0 +1,138 @@
+# R_RMSEr_RMSEx_RMSExy_2_CE90_12xx.txt
+# 
+# Added positioning of Legend reletave to X and Y Range
+# Adding Ager calculations
+
+numSamps = 30	# i: the number of Random Numbers or images or readings going into the sample  // end of x range
+numTimes = 50	# j: the number of times we re-visit a dataset to measure numSamps from the data
+
+
+hiReportPercentages <- c(0.95)			# used for the quantile report %'s
+loReportPercentages <- c(0.05)
+
+# Ranges for graphing
+yRange <- c(0, 10)				# using xRange to set the x axis limits of xlim...
+
+# !!!!!!!!!!  Untill I fix the range for CE90RMSEx[i,j, ALWAYS leave at 2 !!!!!!!!
+startX = 2 			# start of x range.  usually 2
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+# Satellite stDEV and bias
+SatCE90 = 5
+StDevSatx = SatCE90 / 2.1460
+StDevSaty = SatCE90 / 2.1460
+xBias = 0
+yBias = 0
+
+# Chart titles and lables
+mainTitile <- paste( "Range of 90% CI for CE90 by number of samples per image: n=", numTimes, sep=" ")
+subTitle   <- paste("Blue dots: CE90RMSEx;    Red dots: CE90RMSExy")
+xAxisLabel = "number of samples per image"
+yAxisLabel = "Calculated CE90"
+
+#Legend Placement
+legCornerX = startX+((0.6)*(numSamps - startX))
+legCornerY = min(yRange)+((0.25)*(max(yRange)-min(yRange)))
+
+RMSErhi  <- numeric() # array for ninetyth of RMSEr
+RMSExhi  <- numeric() # array for ninetyth of RMSEx
+RMSExyhi <- numeric() # array for ninetyth of RMSExy
+
+RMSErlo  <- numeric() # array for tenth of RMSEr
+RMSExlo  <- numeric() # array for tenth of RMSEx 
+RMSExylo <- numeric() # array for tenth of RMSExy
+
+RMSEr  <- numeric() # array for RMSEr
+RMSEx  <- numeric() # array for RMSEx 
+RMSExy <- numeric() # array for RMSExy
+
+CE90RMSEx       <- 1:(numSamps*numTimes) 
+dim(CE90RMSEx)  <- c(numSamps,numTimes)
+
+CE90RMSExy      <- 1:(numSamps*numTimes) 
+dim(CE90RMSExy) <- c(numSamps,numTimes)
+
+CE90RMSEr       <- 1:(numSamps*numTimes) 
+dim(CE90RMSEr)  <- c(numSamps,numTimes)
+
+# Populate arrays
+
+for (i in startX:numSamps) {
+	for (j in 1:numTimes) {
+		sat_x  <- rnorm(i,xBias,StDevSatx)
+		sat_y  <- rnorm(i,yBias,StDevSaty)
+		sat_r  <- sqrt(sat_x^2 + sat_y^2)
+
+		# calculate mean for each horizontal axis  (x and y)
+		# Used for Ager
+		sat_x_mean <- sum(sat_x)/length(sat_x)		# mean error for x axis
+		sat_y_mean <- sum(sat_y)/length(sat_y)		# mean error for y axis
+		horiz_bias <- sqrt(sat_x_mean^2 + sat_y_mean^2)  # horiz bias - radial error
+		
+		RMSEx  <- sqrt(sum((sat_x)^2)/(length(sat_x))) # I had length-1 , but changes it back ot length
+		RMSEy  <- sqrt(sum((sat_y)^2)/(length(sat_y)))
+
+		RMSExy <- (RMSEx+RMSEy)/2
+		RMSEr  <- sqrt(sum((sat_r)^2)/(length(sat_r)))
+		stDEVxy<- (sd(sat_x)+sd(sat_y))/2		# 
+
+		CE90RMSEx  [i,j] <- RMSEx  * 2.1460
+		CE90RMSExy [i,j] <- RMSExy * 2.1460
+		CE90RMSEr  [i,j] <- RMSEr  * 1.5175
+
+
+	} # End for j
+} # End for i
+
+# write array
+
+
+ x_Array <- c(1:numSamps*numTimes)
+ y_Array <- c(1:numSamps*numTimes)
+ x_Array2<- c(1:numSamps*numTimes)
+ y_Array2<- c(1:numSamps*numTimes)
+ a = 1
+
+ for (i in startX:numSamps) {
+ 	for (j in 1:numTimes) {
+		x_Array[a]  <- i				
+		y_Array[a]  <- CE90RMSEx[i,j] 
+		x_Array2[a] <- i+0.1		#added +0.1 to i to give some seperation in the x axis for plotting array1 and array2				
+		y_Array2[a] <- CE90RMSExy[i,j] 
+		a <- a+1
+	}  # End for j
+	
+	RMSErhi   [i]= quantile(CE90RMSEr  [i,], hiReportPercentages)
+	RMSExhi   [i]= quantile(CE90RMSEx  [i,], hiReportPercentages)
+	RMSExyhi  [i]= quantile(CE90RMSExy [i,], hiReportPercentages)
+
+	RMSErlo   [i]= quantile(CE90RMSEr  [i,], loReportPercentages)
+	RMSExlo   [i]= quantile(CE90RMSEx  [i,], loReportPercentages)
+	RMSExylo  [i]= quantile(CE90RMSExy [i,], loReportPercentages)
+
+}  # End for i
+
+
+plot (x_Array, y_Array, xlab = xAxisLabel, ylab = yAxisLabel, col = "blue", ylim = yRange, cex = 0.3)
+points (x_Array2, y_Array2, col = "red", cex = 0.1)
+title (mainTitile, sub = subTitle)
+legend(legCornerX, legCornerY, c("RMSEr @ 90% CI", "RMSExy @ 90% CI", "RMSEx @ 90% CI"), 
+	col = c(3, 4, 5), text.col = "green4", lty = c(1, 1, 1, 1), pch = c(NA, NA, NA, NA),
+	merge = TRUE, bg = "gray90")
+
+lines ( c(startX,numSamps), c(SatCE90,SatCE90), col="gray", lty="dotted")
+lines ( c(startX,numSamps), c(SatCE90+1,SatCE90+1), col="lightgray", lty="dotted")
+lines ( c(startX,numSamps), c(SatCE90-1,SatCE90-1), col="lightgray", lty="dotted")
+
+lines ( c(1:numSamps),RMSErhi , col = 3)
+lines ( c(1:numSamps),RMSExyhi, col = 4)
+lines ( c(1:numSamps),RMSExhi,  col = 5)
+
+lines ( c(1:numSamps),RMSErlo , col = 3)
+lines ( c(1:numSamps),RMSExylo, col = 4)
+lines ( c(1:numSamps),RMSExlo,  col = 5)
+
+
+RMSExyhi - RMSExylo
+# END
+
