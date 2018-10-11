@@ -1,0 +1,114 @@
+################################## 
+#
+# BBA Reporting
+#
+##################################
+
+##################################
+#Setup
+file   <- "055229282010_P800_to_Idaho.txt"
+dir    <- "C:\temp_working\IDAHO\055229282010"
+inFile <- paste (dir,file,sep="") # "C:/temp_working/IDAHO/055229282010/055229282010_P800_to_Idaho.txt"  # indentify the input file for reading
+myData <- read.table(inFile, header=FALSE, sep = "")#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+
+scalingFactor <- 750  # Scaling factor to magnify the error residuals
+
+reporting_percents <- c(0, 0.25, 0.5, 0.75, 0.90, 0.95, 0.99, 1)
+
+op <- par(mfrow = c(1, 2), # 2 x 1 pictures on one plot
+          pty = "s")       # square plotting region,
+                           # independent of device size
+
+##################################
+# Read Data
+x_Array  <- c(myData $V1)
+y_Array  <- c(myData $V2)
+xp_Array <- c(myData $V3)
+yp_Array <- c(myData $V4)
+
+################################
+# calculate diff XandY  find r #
+dx <- (xp_Array - x_Array)     # Differnece in x
+dy <- (yp_Array - y_Array)     # Difference in y
+r  <- sqrt(dx^2 + dy^2)        # calculate radial values
+
+####################################
+# Calculate PlotRange from dx and dy
+plotRange <- max( dx, dy, abs(min(dx)), abs(min(dy)))
+
+xRange <- c(-3, 3) 
+yRange <- c(-3, 3) 
+range  <- max(xRange, yRange)
+
+##################################
+# calculate CE90 - Direct Ranking method
+CE90Pcntl<- quantile (r, c(0.90))     #90th Percentile
+
+#########################################
+# Make Circles for plotting the CE90
+
+cirSpacing <- 2  #  circle Spacing in degrees. this is for drawing the circles.
+cir <- seq(0, 360, by=cirSpacing)
+CE90PcntlCirX <-1:length(cir) # x coordinates for circle
+CE90PcntlCirY <-1:length(cir) # y coordinates for circle
+
+for (pnts in 0:(360/cirSpacing)+1)  {
+	CE90PcntlCirX[pnts] <- sin(cir[pnts]*pi/180)* CE90Pcntl
+	CE90PcntlCirY[pnts] <- cos(cir[pnts]*pi/180)* CE90Pcntl
+	} # end for pnts
+
+#########################################
+# Draw the Plots
+
+#########################################################
+## Plot 1: x,y scatter with CE90 (based on direct ranking)
+plot (dx, dy, col="blue", xlim = xRange, ylim = yRange, 
+	main = paste(file, "CE90", sep="  "),
+	xlab="Difference Easting", 
+	ylab="Difference Northing", 
+	cex=0.5) 
+points (sum(dx)/length(dx), sum(dy)/length(dy), col="red", cex=2, pch=3) # red cross at center of points
+
+# Grid Lines  
+lines ( c(-3,3), c(0,0), col="gray", lty="solid")
+lines ( c(0,0), c(-3,3), col="gray", lty="solid")
+
+lines ( c(-3,3), c(2,2),   col="gray", lty="dotted")  
+lines ( c(-3,3), c(1,1),   col="gray", lty="dotted")  
+lines ( c(-3,3), c(-1,-1), col="gray", lty="dotted")  
+lines ( c(-3,3), c(-2,-2), col="gray", lty="dotted")  
+
+lines ( c(2,2),   c(-3,3), col="gray", lty="dotted")  
+lines ( c(1,1),   c(-3,3), col="gray", lty="dotted")  
+lines ( c(-1,-1), c(-3,3), col="gray", lty="dotted")  
+lines ( c(-2,-2), c(-3,3), col="gray", lty="dotted")  
+
+# CE90 Circle
+lines (CE90PcntlCirX, CE90PcntlCirY, col=3, lwd = 1)
+
+# Legend
+legCornerX <- min(xRange)
+legCornerY <- max(yRange)
+legend(legCornerX, legCornerY, 
+	c(paste(round(CE90Pcntl,digits=2), "m CE90", sep = ""), "Mean"), 
+	col = c(3, 2), text.col = "green4", 
+	lty = c(1, 1, 1, 1), lwd = c(1,1,1,1,1), pch = c(NA, NA, NA, NA), merge = TRUE, bg = "gray90")
+
+################################################
+## Plot 2: Point distribution with error vectors
+plot (x_Array, y_Array, col="blue", 
+	main="Point Distribution",
+	xlab="Easting", 
+	ylab="Northing",
+	cex=0.5 )
+
+for (i in 1:length(x_Array)) {
+	arrows( x_Array[i], y_Array[i], 
+      (x_Array[i]+(dx[i]*scalingFactor)),(y_Array[i]+(dy[i]*scalingFactor)), 
+      length = 0.05, angle = 30, 
+      col="blue", lty=1)
+} #end for i
+
+
+CE90Pcntl
+quantile (r, reporting_percents)

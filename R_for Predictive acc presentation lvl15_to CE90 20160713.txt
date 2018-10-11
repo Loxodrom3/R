@@ -1,0 +1,60 @@
+# Provide a sampling of a LAM as inFile
+# declare the stated accuracy of the sat and DEM
+# ---Note: using the satCE90 across all ONAs.  this could be improved...---
+# run the sampled ONA against the DEM CE90 to get terrain displacement
+# and combine the terrain displacement with the satCE90 with RSS
+# report on the resulting error array
+#
+# running one sample per point.  there are a large number of samples
+
+inFile <- "C:/temp_working/dragonfly/SaudiQ313_lvl15.csv" 
+bins = 100							# declare the number of Bins for the histogram
+xRange <- c(0, 15)						# using xRange to set the x axis limits of xlim...
+reportPercentages <- c(.50, .90, .95, .99999)			# used for the quantile report %'s
+
+SatCE90 = 5
+DEMLE90 = 16						# declare the vertical accuracy of the DEM	
+
+StDevSat = SatCE90 / 2.1460
+StDevz   = DEMLE90 / 1.6449					# convert LE90 to Standard Deviation (z) of DEM - Assumes normal gausian distribution
+
+
+# myData <- read.table(inFile, header=TRUE, sep=",")	
+
+##############
+
+
+ONA_Array <- c(myData $ONA)					# write the ONA data to an array
+
+# Model errors
+vert_e <- rnorm(length(ONA_Array),0,StDevz)
+sat_x  <- rnorm(length(ONA_Array),0,StDevSat)
+sat_y  <- rnorm(length(ONA_Array),0,StDevSat)
+sat_e  <- sqrt(sat_x^2 + sat_y^2)				# Sat_e as a radial distance of the x and y component
+horiz_e <- vert_e*tan(ONA_Array*(pi/180))			# horizontal error is the vertical error from the DEM times the tangent of the ONA (values for tan need to be in radians, so we use ona*pi/180 to go from degrees to radians
+horiz_e <- sqrt(horiz_e * horiz_e)				# provides the absolute value for Horizontal error.  This is a radial error, there can not be negatives
+horiz_e_total <- sqrt((sat_e*sat_e) + (horiz_e*horiz_e))	#rss
+
+DEMLE90
+SatCE90
+# summary(ONA_Array)
+# summary(sat_e)
+# summary(vert_e)
+# summary(horiz_e)
+# summary(horiz_e_total)
+
+quantile (ONA_Array, c(.50, .90, .95, .99999))
+quantile (sat_e, c(.50, .90, .95, .99999))
+quantile (sqrt(vert_e*vert_e), c(.50, .90, .95, .99999))
+quantile (horiz_e_total, c(.50, .90, .95, .99999))
+
+SatCE90
+DEMLE90
+
+hist (horiz_e_total, breaks=bins, density = 10, col="blue", angle = 45, xlim = xRange, main=inFile)
+legend(8, 10000, c(paste("satCE90  = ",SatCE90,"m"),paste("DEMLE90 = ",DEMLE90,"m"), paste("Predective CE90 = ",signif(quantile (horiz_e_total, c(0.90)),2),"m")), 
+	text.col = "green4", merge = TRUE, bg = "gray90")
+
+
+# rug  (horiz_e_total)
+

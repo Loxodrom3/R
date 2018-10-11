@@ -1,0 +1,90 @@
+# R_Single image matrix ONA  LE90 for accuracy estimate.txt
+# given a satCE90, and a DEMLE90, this script generates an
+# estimated product CE90 for a range of LE90s (1:DEMLE90) and ONAs
+
+reportPercentConfidence = 0.90  # report confidence, i.e. 0.90 -> 90% confidence  0.95 -> 95% confidence
+onaList <-  seq(0, 30, by=1)    # list of ONAs to report
+# for this script, there needs to be the same length for DEMeList and SatCE90List 
+DEMeList<-    c( 5,  5,  4, 4) # list of DEM LE90's to report
+satCE90List = c( 2, 2.5, 2, 2.5) # list of Satellite CE90
+
+onaProfile <- c(0.002460630, 0.004921260, 0.008366142, 0.010334646, 0.011811024, 0.013287402, 0.014763780, 0.017224409, 0.018700787, 
+                0.019685039, 0.022145669, 0.024606299, 0.027066929, 0.029527559, 0.031496063, 0.033464567, 0.036909449, 0.039370079,
+                0.041830709, 0.044291339, 0.036909449, 0.038385827, 0.042814961, 0.048228346, 0.054133858, 0.059055118, 0.066437008, 
+                0.073818898, 0.068897638, 0.039370079, 0.019685039)
+
+onaProfileRev <- c(0.019685039, 0.039370079, 0.068897638, 0.073818898, 0.066437008, 0.059055118, 0.054133858, 0.048228346, 0.042814961, 0.038385827, 0.036909449, 0.044291339, 0.041830709, 0.039370079, 0.036909449, 0.033464567, 0.031496063, 0.029527559, 0.027066929, 0.024606299, 0.022145669, 0.019685039, 0.018700787, 0.017224409, 0.01476378, 0.013287402, 0.011811024, 0.010334646, 0.008366142, 0.00492126, 0.00246063)
+
+
+depth = 10000                  # more 0's, more precision, longer runtime
+
+##############
+reportArray <- array(NA, c(length(onaList), length(DEMeList)))
+
+for (i in  seq(along=onaList)){   # for every value in onaList, do this
+	ONA_Array <- array(onaList[i], depth) # array of length 'depth' for calculations 
+
+	for (j in 1:length(DEMeList)){	# Model errors
+
+		StDevz   = DEMeList[j] / 1.6449   # LE90 to StDev for one dimmensional DEM errors
+		vert_e    <- rnorm(length(ONA_Array),0,StDevz)
+
+		sat_x     <- rnorm(length(ONA_Array),0,satCE90List[j]/2.1460)
+		sat_y     <- rnorm(length(ONA_Array),0,satCE90List[j]/2.1460)
+  		sat_e     <- sqrt(sat_x^2 + sat_y^2)				# Sat_e as a radial distance of the x and y component
+		terr_disp <- vert_e*tan(ONA_Array*(pi/180))			# horizontal error is the vertical error from the DEM times the tangent of the ONA (values for tan need to be in radians, so we use ona*pi/180 to go from degrees to radians
+		terr_disp <- sqrt(terr_disp * terr_disp)			# provides the absolute value for Horizontal error.  This is a radial error, there can not be negatives
+		horiz_e_total <- sqrt((sat_e*sat_e) + (terr_disp*terr_disp))	# rss
+  		reportArray[i,j] <- quantile(horiz_e_total, reportPercentConfidence)
+	} #end j
+} #end i, ona
+
+#############
+### Report
+
+onaList
+
+############
+### Plot
+
+xRange <- c(min(onaList), max(onaList))
+# yRange <- c(0, max(reportArray)) 	# use for auto-ranging on the y-axis
+yRange <- c(0, 10)
+colArray <- c("blue", "green", "orange", "red")
+
+xName <- "ONA"
+yName <- paste("CE90 @ ",  reportPercentConfidence, " Confidence")
+
+#######################################################################
+##### only making one graph for this script, commenting our the 2x2####
+# op <- par(mfrow = c(2, 2),  # 2 x 2 pictures on one plot
+#            pty = "s")       # square plotting region, independent of device size
+
+
+
+   plot  (reportArray [, 1], col = colArray[1], xlab= xName, ylab= yName, main= paste("CE90 by ONA for various geometries"), xlim= xRange, ylim= yRange, typ='l')
+   lines (reportArray [, 2], col = colArray[2])
+   lines (reportArray [, 3], col = colArray[3])
+   lines (reportArray [, 4], col = colArray[4])
+#  lines (onaProfile *100, col="gray")  # shows onaProfile
+
+
+## Legend
+legCornerX <- min(xRange)
+legCornerY <- max(yRange)
+legend(legCornerX, legCornerY, 
+	c(paste("Match CE90", satCE90List[1], "m,","demLE90", DEMeList[1], "m"), 
+	  paste("Match CE90", satCE90List[2], "m,","demLE90", DEMeList[2], "m"), 
+	  paste("Match CE90", satCE90List[3], "m,","demLE90", DEMeList[3], "m"), 
+	  paste("Match CE90", satCE90List[4], "m,","demLE90", DEMeList[4], "m")), 
+	col = c(colArray[1], colArray[2], colArray[3], colArray[4]), 
+        text.col = "gray30", lty = c(1, 1, 1, 1), lwd = c(1,1,1,1,1), pch = c(NA, NA, NA, NA), merge = TRUE, bg = "gray90")
+
+reportArray
+
+
+sum(onaProfile * reportArray[,1])
+sum(onaProfile * reportArray[,2])
+sum(onaProfile * reportArray[,3])
+sum(onaProfile * reportArray[,4])
+

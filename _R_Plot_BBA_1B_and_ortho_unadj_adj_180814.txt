@@ -1,0 +1,143 @@
+###############################
+# Plot 1B and Ortho Accuracy
+# Before and After BBA
+###############################
+
+##########################################################################################
+#
+# Upgrades: 
+#
+##########################################################################################
+
+library("ellipse")
+library(car)
+
+
+##################
+# Files and Data
+##################
+# Note: I changed the headers in the .csv files to read "raw_lat_delta", "adj_lat_delta", etc...
+##################
+filePath1 <- "C:/temp_working/bba/block46/"      # path to the files
+filePath2 <- "C:/temp_working/bba/block46/"      # path to the files
+file1     <- "block46_1b_evaluation.csv"   # 1B files  
+file2     <- "block46_ortho_evaluation.csv" # ortho files 
+inFile1 <- paste(filePath1, file1, sep = "")
+myData1 <- read.table(inFile1, header=TRUE, sep = ",")	#read the inFile as a table. 
+inFile2 <- paste(filePath2, file2, sep = "")
+myData2 <- read.table(inFile2, header=TRUE, sep = ",")	#read the inFile as a table. 
+
+##################
+# write Data to arrays
+##################
+Bunadj_lat_Array  <- c(myData1 $raw_lat_delta)
+Bunadj_lon_Array  <- c(myData1 $raw_lon_delta)
+Badj_lat_Array    <- c(myData1 $adj_lat_delta)
+Badj_lon_Array    <- c(myData1 $adj_lon_delta)
+
+Ounadj_lat_Array  <- c(myData2 $raw_lat_delta)
+Ounadj_lon_Array  <- c(myData2 $raw_lon_delta)
+Oadj_lat_Array    <- c(myData2 $adj_lat_delta)
+Oadj_lon_Array    <- c(myData2 $adj_lon_delta)
+
+##################
+# make Ellipses
+##################
+Bunadj_el <- dataEllipse (x= Bunadj_lon_Array, y= Bunadj_lat_Array, levels=c(0.9, 0.95), draw=FALSE)
+Badj_el   <- dataEllipse (x=   Badj_lon_Array, y=   Badj_lat_Array, levels=c(0.9, 0.95), draw=FALSE)
+Ounadj_el <- dataEllipse (x= Ounadj_lon_Array, y= Ounadj_lat_Array, levels=c(0.9, 0.95), draw=FALSE)
+Oadj_el   <- dataEllipse (x=   Oadj_lon_Array, y=   Oadj_lat_Array, levels=c(0.9, 0.95), draw=FALSE)
+
+##################
+# Plot Parameters
+##################
+
+xRange <- c(-6, 6)
+yRange <- c(-6, 6)
+xLabel <-  ("Easting offset (m)")
+yLabel <-  ("Northing offset (m)")
+
+op <- par(mfrow = c(1, 2), # 1 x 2 pictures on one plot
+          pty = "s")       # square plotting region,
+                           # independent of device size
+
+
+##################
+# Plot
+##################
+
+##################
+# Plot 1B
+
+plot (Bunadj_lon_Array, Bunadj_lat_Array,xlim=xRange, ylim = yRange,  col="blue", cex=0.6, 
+      xlab= xLabel, ylab= yLabel,main="Pointing Accuracy from 1B's")
+lines(Bunadj_el $'0.9', col="blue")
+
+points(Badj_lon_Array, Badj_lat_Array, col="green", cex=0.6)
+lines (Badj_el $'0.9', col="green")
+
+#########
+# arrows
+for (i in 1: length(Bunadj_lat_Array)) {
+  arrows (Bunadj_lon_Array[i], Bunadj_lat_Array[i], Badj_lon_Array[i], Badj_lat_Array[i], #
+	length=0.1, angle=20, col="grey")
+} #end i arrows
+
+points (Badj_lon_Array, Badj_lat_Array, col="green", cex=0.8)
+
+#######
+# grid
+abline(h = min(xRange):max(xRange), v = min(yRange):max(yRange), col = "lightgray", lty = 3)
+abline(h = 0, v = 0, col = "black", lty = 1)
+
+
+##################
+#Plot Ortho
+
+plot (Ounadj_lon_Array, Ounadj_lat_Array,xlim=xRange, ylim = yRange, col="blue", cex=0.6, 
+      xlab= xLabel, ylab= yLabel, main="Map Accuracy from Orthos")
+lines(Ounadj_el $'0.9', col="blue")
+
+points(Oadj_lon_Array, Oadj_lat_Array, col="green", cex=0.8)
+lines (Oadj_el $'0.9', col="green")
+
+
+#########
+# arrows
+for (i in 1: length(Ounadj_lat_Array)) {
+  arrows (Ounadj_lon_Array[i], Ounadj_lat_Array[i], Oadj_lon_Array[i], Oadj_lat_Array[i], 
+	length=0.1, angle=20, col="grey")
+} #end i 
+
+
+#######
+# grid
+abline(h = min(xRange):max(xRange), v = min(yRange):max(yRange), col = "lightgray", lty = 3)
+abline(h = 0, v = 0, col = "black", lty = 1)
+
+
+##################
+# Data Statistics
+##################
+#1B
+summary(Bunadj_lat_Array)
+summary(Bunadj_lon_Array)
+summary(Badj_lat_Array)
+summary(Badj_lon_Array)
+
+Badj_r <- ((Badj_lon_Array^2)+(Badj_lat_Array^2))^0.5
+quantile(Badj_r,c(0.90, 0.95, 0.99))
+
+#OR
+summary(Ounadj_lat_Array)
+summary(Ounadj_lon_Array)
+summary(Oadj_lat_Array)
+summary(Oadj_lon_Array)
+
+Ounadj_r <- ((Ounadj_lon_Array^2)+(Ounadj_lat_Array^2))^0.5
+quantile(Ounadj_r,c(0.90, 0.95, 0.99))
+
+Oadj_r <- ((Oadj_lon_Array^2)+(Oadj_lat_Array^2))^0.5
+quantile(Oadj_r,c(0.90, 0.95, 0.99))
+
+

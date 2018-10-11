@@ -1,0 +1,81 @@
+###############################
+# Plot BBA
+# Before and After
+###############################
+
+##########################################################################################
+#
+# Upgrades: read the data into an 3x1 array so that sorting keeps the data pairs together.
+#
+##########################################################################################
+
+filePath1 <- "C:/temp_working/bba/relative/" # path to the   BEF ORE
+filePath2 <- "C:/temp_working/bba/adjusted/" # path to the         AFTER
+
+file <- "image_list.objPt.csv" # contains lat and long of tie points  
+tieFile <- "image_list.tie.csv" # This file has the tie residuals
+
+inFile1 <- paste(filePath1, file, sep = "")
+inFile2 <- paste(filePath2, file, sep = "")
+inFileTie1 <-  paste(filePath1, tieFile, sep = "")
+inFileTie2 <-  paste(filePath2, tieFile, sep = "")
+
+myData1 <- read.table(inFile1, header=TRUE, sep = ",")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+myData2 <- read.table(inFile2, header=TRUE, sep = ",")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+myDataTie1 <- read.table(inFileTie1, header=TRUE, sep = ",")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+myDataTie2 <- read.table(inFileTie2, header=TRUE, sep = ",")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+
+yRange <- c(-16, 16)
+hRange <- c(0, 0.25)
+
+bins   <- c(-16,-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 16)
+
+op <- par(mfrow = c(2, 4), # 2 x 4 pictures on one plot
+          pty = "s")       # square plotting region,
+                           # independent of device size
+
+##################
+# before
+##################
+
+lat_Array  <- c(myData1 $LAT)
+lon_Array  <- c(myData1 $LON)
+dz_Array   <- c(myData1 $DELTA_Z)
+dz_Array_sorted <- sort(dz_Array)
+
+line_Res_Array  <- c(myDataTie1 $LINE_RES)
+samp_Res_Array  <- c(myDataTie1 $SAMP_RES)
+
+plot (lon_Array, lat_Array)
+
+# plot (samp_Res_Array, line_Res_Array)
+hist (dz_Array, breaks = bins, xlim=yRange, ylim = hRange)
+
+plot (lon_Array, dz_Array, ylim=yRange)
+
+plot (dz_Array_sorted, ylim=yRange)
+
+##################
+# after
+##################
+
+lat_Array   <- c(myData2 $LAT)
+lon_Array   <- c(myData2 $LON)
+dz_Array2   <- c(myData2 $DELTA_Z)
+dz_Array2_sorted <- sort(dz_Array2)
+
+line_Res_Array  <- c(myDataTie2 $LINE_RES)
+samp_Res_Array  <- c(myDataTie2 $SAMP_RES)
+
+plot (lon_Array, lat_Array)
+
+#plot (samp_Res_Array, line_Res_Array)
+hist (dz_Array2, breaks = bins, xlim=yRange,  ylim = hRange)
+
+plot (lat_Array, dz_Array2, ylim=yRange)
+
+plot (dz_Array2_sorted, ylim=yRange)
+
+sd(dz_Array) * 1.6449
+sd(dz_Array2)* 1.6449
+

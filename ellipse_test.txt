@@ -1,0 +1,23 @@
+install.packages("car")
+library(car)
+library("ellipse")
+
+
+x <- rnorm(20, 5,3)
+y <- rnorm(20,-5,1)
+
+m <- matrix(c(c(x),c(y)), nrow = 2, ncol = length(x), byrow = TRUE, dimnames = list(c("x", "y")))
+
+
+xRange <- c(-20, 20)
+yRange <- c(-20, 20)
+
+plot (x,y, xlim=xRange, ylim = yRange, col="blue", cex=0.6)
+lines (ellipse(cov(m), centre = c(mean(x), mean(y)), level = 0.99), col="red")
+
+abline(h = min(xRange):max(xRange), v = min(yRange):max(yRange), col = "lightgray", lty = 3)
+abline(h = 0, v = 0, col = "black", lty = 1)
+
+
+
+#dataEllipse(x, y, levels=c(0.90, 0.95),xlim=xRange, ylim = yRange, col="blue", cex=0.6 )

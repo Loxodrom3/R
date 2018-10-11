@@ -1,0 +1,98 @@
+##################################
+#Law Of Large Numbers with Sart and End
+#also includes Bundle residule floor
+##################################
+
+# Note: the 90%, 95%, 99% lines need to be reviewed.  
+# *THEY ARE NOT CORRECT AS OF 2/1/2016. *
+# corrected useing Quantile.  should review using stDEVxy*2.1460 as of 4/26/16
+# Add Key
+
+strRND   = 1	# starting point for the number of Random Numbers or images or reading going into the sample
+endRND   = 25 # ending   point for the number of Random Numbers or images or reading going into the sample
+numSamps = 10000	# the number of samples for each set of numRND
+
+
+xLabel = "number of Samples"
+yLabel = "average horizontal error"
+title  = "Law of Large numbers: simulated data"
+yRange <- c(0, 6)						# using xRange to set the x axis limits of xlim...
+
+
+reportPercentages <- c(.50, .90, .95, .99, .99999)		# used for the quantile report %'s
+
+SatCE90   = 5
+StDevSat  = SatCE90  / 2.1460
+BndlCE90  = 2
+StDevBndl = BndlCE90 / 2.1460
+
+mx <- numeric()
+ni <- numeric()
+nf <- numeric()
+nn <- numeric()
+
+r  <- 1:(((endRND-strRND)+1)*numSamps) 	# using end-str+1 becasue the list is inclusive
+dim(r) <- c((endRND-strRND+1),numSamps)
+
+# Make array
+
+
+for (i in 1:(endRND-strRND+1)) {
+	for (j in 1:numSamps) {
+		sat_x    <- rnorm((i+strRND-1),0,StDevSat)
+		sat_avgx <- (sum(sat_x)/length(sat_x))
+		sat_y    <- rnorm((i+strRND-1),0,StDevSat)
+		sat_avgy <- (sum(sat_y)/length(sat_y))
+		sat_avg_err  <- sqrt(sat_avgx^2 + sat_avgy^2)
+
+		bndl_x   <- rnorm(1,0,StDevBndl)
+		bndl_y   <- rnorm(1,0,StDevBndl)
+		bndl_xy  <- (sqrt((bndl_x^2)+(bndl_y^2)))
+
+		r[i,j] <- sqrt(sat_avg_err^2 + bndl_xy^2) # + bndl_xy^2)
+
+	} # End for j
+	mx[i] <- max(r[i,])
+	ni[i] <- quantile (r[i,],0.90)  #  check
+	nf[i] <- quantile (r[i,],0.95)  #  sd(r[i,]*2.4477)       #  check 'Could use qualtile (r[i,],0.95)
+	nn[i] <- quantile (r[i,],0.99)  #  check
+} # End for i
+
+
+# write array for plotting
+
+x_Array <- seq(1:(((endRND-strRND)+1)*numSamps))  #look into creating the array without filling it witn 1, 2, 3, ...n
+y_Array <- c(1:(((endRND-strRND)+1)*numSamps))
+
+a = 1
+for (i in 1:((endRND-strRND)+1)) {
+	for (j in 1:numSamps) {
+		x_Array[a] <- (i+(strRND-1))				
+		y_Array[a] <- r[i,j] 
+		a <- a+1
+	}  # End for j
+}  # End for i
+
+plot (x_Array, y_Array, col = "blue", ylim = yRange, xlab= xLabel, ylab = yLabel, main = title, cex = 0.5)
+lines ( c(strRND:endRND),ni, col = "red")
+lines ( c(strRND:endRND),nf, col = "orange")
+lines ( c(strRND:endRND),nn, col = "blue")
+
+lines ( c(0,endRND), c(SatCE90,SatCE90), col="gray", lty="dotted")
+lines ( c(0,endRND), c(2  ,2  ), col="gray", lty="dotted")
+lines ( c(0,endRND), c(1.5,1.5), col="gray", lty="dotted")
+lines ( c(0,endRND), c(1  ,1  ), col="gray", lty="dotted")
+lines ( c(0,endRND), c(SatCE90/2,SatCE90/2), col="gray", lty="dotted")
+
+SatCE90
+BndlCE90
+strRND
+endRND
+numSamps
+quantile (r[1,], c(reportPercentages))
+ni[1]
+sd(r[1,])
+quantile (r[endRND-strRND,], c(reportPercentages))
+ni[endRND-strRND]
+sd(r[endRND-strRND,])
+

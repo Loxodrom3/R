@@ -1,0 +1,21 @@
+library("rjson") 
+
+filePrefix <- "110_" # this will be appended with "mssol.json"
+json_file <- paste ("Q:/Public Drop/", filePrefix,"mssol.json", sep="")
+json_data <- fromJSON(file=json_file)
+
+x<-numeric()
+
+for (i in 1:10000) {
+	x[i] <- json_data $features[[i]]$properties$ONA
+} #end for i
+
+#x <- unique(x)
+x <- sort (x)
+
+
+zz <- file(paste(filePrefix,"_AcqDate.txt",sep=""), "w")  # open an output file connection
+cat(x, sep = "\n", file = zz)
+# cat("One more line\n", sep = ",", file = zz)
+close(zz)
+

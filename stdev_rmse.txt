@@ -23,7 +23,7 @@
       yLabel <-  ("y")
       Title  <-  c("StDev", "RMSe", "StDev(xy)", "RMSe(xy)")
 
-      pltColor <- c("blue", "green4", "ivory3", "gray", "black")
+      pltColor <- c("blue", "green4", "ivory4", "gray", "black")
   # re-do colors  # color key-->[1]raw, [2]adj, [3]arrows, [4]grid, [5]x=0, y=0
 
       op <- par(mfrow = c(2, 2), # 1 x 1 pictures on one plot
@@ -52,12 +52,16 @@
       plot  (x0, y0, xlim=xRange, ylim = yRange,  col= pltColor[2], pch= 16, cex= 0.6,
           xlab= xLabel, ylab= yLabel, main=Title[1])
 
-          #########
-          # arrows StDev
+         #########
+         # arrows StDev
           for (i in 1: length(x0)) {
                arrows (mean(x0), mean(y0), x0[i], y0[i],
          length=0.1, angle=20, col= pltColor[3])
                } #end i arrows
+
+         ###############
+         # Center point
+           points (mean (x0), mean (y0), col= pltColor[2], lwd= 2, pch= 3, cex= 4)
 
          #######
          # grid
@@ -76,6 +80,10 @@
               arrows (0, 0, x0[i], y0[i],
         length=0.1, angle=20, col= pltColor[3])
               } #end i arrows
+
+         ###############
+         # Center point
+           points (0, 0, col= pltColor[2], lwd= 2, pch= 3, cex= 4)
 
 
          #######
@@ -98,6 +106,10 @@
               length=0.1, angle=20, col= pltColor[3])
           } #end i arrows
 
+        ###############
+        # Center point
+          points (mean(x0), mean(y0), col= pltColor[2], lwd= 2, pch= 3, cex= 4)
+
          #######
          # grid
       abline(h = min(xRange):max(xRange), v = min(yRange):max(yRange), col = pltColor[4], lty = 3)
@@ -118,6 +130,11 @@
            arrows (0, y0[i], x0[i], y0[i],
              length=0.1, angle=20, col= pltColor[3])
          } #end i arrows
+
+        ###############
+        # Center point
+          points (0, 0, col= pltColor[2], lwd= 2, pch= 3, cex= 4)
+
 
 
          #######

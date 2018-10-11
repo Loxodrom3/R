@@ -1,0 +1,35 @@
+### add Preamble
+
+ER <- 6378.137	# Earth Radius in km (from WGS84)
+
+WV1Ht <- 496	# WV01 Orbital height in km
+WV2Ht <- 770	# WV02 Orbital height in km
+
+WV01R <- ER + WV1Ht 	# WV01 radius
+WV02R <- ER + WV2Ht	# WV02 radius
+
+Earth<- array(1:361, c(361,2))
+WV01 <- array(1:361, c(361,2))
+WV02 <- array(1:361, c(361,2))
+
+###### Determine Range For Viewing Plots ######
+center <-c(0, 6700)
+zm     <- 600
+xRange <-c(center[1]-zm, center[1]+zm)
+yRange <-c(center[2]-zm, center[2]+zm)
+
+for (i in 1:361) {
+ Earth[i,1] <- sin(i*pi/180)*ER
+ Earth[i,2] <- cos(i*pi/180)*ER
+ WV01 [i,1] <- sin(i*pi/180)*WV01R
+ WV01 [i,2] <- cos(i*pi/180)*WV01R
+ WV02 [i,1] <- sin(i*pi/180)*WV02R
+ WV02 [i,2] <- cos(i*pi/180)*WV02R
+} # end for i
+
+plot  (Earth[,1], Earth[,2], col="blue", cex =0, xlim=xRange, ylim=yRange)
+lines (Earth[,1], Earth[,2], col="blue")
+lines (WV01 [,1], WV01 [,2], col= "gray", cex=0)
+lines (WV02 [,1], WV02 [,2], col= "red", cex=0)
+#Legend
+

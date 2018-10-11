@@ -1,0 +1,75 @@
+# this script reads a .csv with Off Nadir Angle (ONA) as one of the fields
+# the .csv is read into a table
+# values are declared for the DEM LE90 and Satellite pointing error
+# then the ONA is modeled with the DEM LE90 and Sat90 to generate a predicted error
+
+numRND   = 200 # the number of Random Numbers or images or reading going into the sample
+numSamps = 1000 # the number of samples for each set of numRND
+
+yRange <- c(0, 8)						# using xRange to set the x axis limits of xlim...
+xText ="number of images"
+yText ="average horiz error"
+tText ="Law of Large Numbers"
+
+reportPercentages <- c(.50, .90, .95, .99999)			# used for the quantile report %'s
+
+SatCE90 = 5
+StDevSat = SatCE90 / 2.1460
+
+mx <- numeric()
+ni <- numeric()
+fi <- numeric()
+
+x  <- 1:(numRND*numSamps) 
+dim(x) <- c(numRND,numSamps)
+
+y  <- 1:(numRND*numSamps) 
+dim(y) <- c(numRND,numSamps)
+
+z  <- 1:(numRND*numSamps) 
+dim(z) <- c(numRND,numSamps)
+
+# Make array
+
+for (i in 1:numRND) {
+	for (j in 1:numSamps) {
+		sat_x  <- rnorm(i,0,StDevSat)
+		sat_avgx <- (sum(sat_x)/length(sat_x))
+		sat_y  <- rnorm(i,0,StDevSat)
+		sat_avgy <- (sum(sat_y)/length(sat_y))
+
+		x[i,j] <- sat_avgx
+		y[i,j] <- sat_avgy
+		z[i,j] <- sqrt(sat_avgx^2 + sat_avgy^2)
+		
+	} # End for j
+	mx[i] <- max(z[i,])
+
+	ni[i] <- ((sd(x[i,])+sd(y[i,]))/2)*2.1460  
+	fi[i] <- ((sd(x[i,])+sd(y[i,]))/2)*1.1774
+} # End for i
+
+# write array
+
+
+x_Array <- c(1:numRND*numSamps)
+y_Array <- c(1:numRND*numSamps)
+a = 1
+
+for (i in 1:numRND) {
+	for (j in 1:numSamps) {
+		x_Array[a] <- i				
+		y_Array[a] <- z[i,j] 
+		a <- a+1
+	}  # End for j
+}  # End for i
+
+plot (x_Array, y_Array, col = "blue", ylim = yRange, xlab =xText, ylab = yText, main = tText)
+lines ( c(1:numRND),ni, col = "red")
+# lines ( c(1:numRND),fi, col = "red3")
+
+numRND
+quantile (z[numRND,], c(.50, .90, .95, .99999))
+ni[1]
+ni
+

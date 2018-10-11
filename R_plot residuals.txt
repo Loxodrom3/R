@@ -1,0 +1,37 @@
+inFile <- "C:/temp_working/xy1.txt"  		# indentify the input file for reading
+myData <- read.table(inFile, header=FALSE, sep = "")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+
+x_Array <- c(myData $V1)
+y_Array <- c(myData $V2)
+xp_Array <- c(myData $V3)
+yp_Array <- c(myData $V4)
+
+dx <- (x_Array - xp_Array)
+dy <- (y_Array - yp_Array)
+r  <- sqrt(dx^2 + dy^2)
+
+xRange <- c(-10, 10)
+yRange <- c(-10, 10)
+plot (dx, dy, col="blue", xlim = xRange, ylim = yRange, cex=0.5)
+
+lines ( xRange, c(0,0), col="gray", lty="solid")
+lines ( c(0,0), yRange, col="gray", lty="solid")
+
+lines ( xRange, c(5,5), col="gray", lty="dotted")
+lines ( xRange, c(-5,-5), col="gray", lty="dotted")
+
+lines ( c(5,5),   yRange, col="gray", lty="dotted")
+lines ( c(-5,-5), yRange, col="gray", lty="dotted")
+
+sdxy <- (sd(dx)+sd(dy))/2
+sum(dx)/length(dx)
+sum(dy)/length(dy)
+
+sd(dx)/sd(dy)
+sd(dx)
+sd(dy)
+sdxy
+
+sdxy*2.1460   #CE90
+
+quantile (r, c(0.90))  #90th Percentile

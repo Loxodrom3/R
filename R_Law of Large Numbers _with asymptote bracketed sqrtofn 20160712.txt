@@ -1,0 +1,53 @@
+##################################
+#Law Of Large Numbers with Sart and End
+#also includes Bundle residule floor
+##################################
+
+# Note: the 90%, 95%, 99% lines need to be reviewed.  
+# *THEY ARE NOT CORRECT AS OF 2/1/2016. *
+# corrected useing Quantile.  should review using stDEVxy*2.1460 as of 4/26/16
+# Add Key
+
+strRND   = 1	# starting point for the number of Random Numbers or images or reading going into the sample
+endRND   = 25    # ending   point for the number of Random Numbers or images or reading going into the sample
+
+xLabel = "number of Samples"
+yLabel = "average horizontal error"
+title  = "1/(sqrt(n)): simulated data"
+yRange <- c(0, 6)						# using xRange to set the x axis limits of xlim...
+
+reportPercentages <- c(.50, .90, .95, .99, .99999)		# used for the quantile report %'s
+
+sat   = 5
+floor = 1.5
+
+mx <- numeric()
+nisq<- numeric()
+nf <- numeric()
+nn <- numeric()
+
+#####################
+# Make 1/sqrt(n) line
+
+for (i in strRND:endRND) {
+	
+	nisq[i-strRND+1] <- floor+((sat-floor)*(1/sqrt(i)))#  check
+	
+} # End for i
+
+
+# write x array for plotting sqrt function
+x <- seq(strRND,endRND)
+
+
+plot (x, nisq, col= "red", ylim = yRange, xlab= xLabel, ylab = yLabel, main = title, cex = 0.5)
+
+lines ( c(0,endRND), c(sat, sat), col="gray", lty="dotted")
+lines ( c(0,endRND), c(floor  ,floor  ), col="gray", lty="dotted")
+lines ( c(0,endRND), c(1.5,1.5), col="gray", lty="dotted")
+lines ( c(0,endRND), c(1  ,1  ), col="gray", lty="dotted")
+lines ( c(0,endRND), c(sat/2,sat/2), col="gray", lty="dotted")
+
+
+lines (x, nisq, col = "orange")
+nisq

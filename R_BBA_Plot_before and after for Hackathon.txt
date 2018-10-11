@@ -1,0 +1,133 @@
+###############################
+# BBA Plot
+# Before and After
+###############################
+
+##########################################################################################
+#
+# Upgrades: read the data into an 3x1 array so that sorting keeps the data pairs together.
+#
+##########################################################################################
+
+filePath1 <- "C:/temp_working/bba/BBA_denver/relative/" # path to the BEF ORE
+filePath2 <- "C:/temp_working/bba/BBA_denver/adjusted/" # path to the  AFTER
+
+file <- "image_list.objPt.csv" # contains lat and long of tie points  
+tieFile <- "image_list.tie.csv" # This file has the tie residuals
+
+inFile1 <- paste(filePath1, file, sep = "")
+inFile2 <- paste(filePath2, file, sep = "")
+inFileTie1 <-  paste(filePath1, tieFile, sep = "")
+inFileTie2 <-  paste(filePath2, tieFile, sep = "")
+
+myData1 <- read.table(inFile1, header=TRUE, sep = ",")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+myData2 <- read.table(inFile2, header=TRUE, sep = ",")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+myDataTie1 <- read.table(inFileTie1, header=TRUE, sep = ",")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+myDataTie2 <- read.table(inFileTie2, header=TRUE, sep = ",")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+
+##################
+# Plot constants
+##################
+
+xRange <- c(-8, 8)
+yRange <- c(-8, 8)
+vyRange1<-c(-20, 20)
+vyRange2<-c(-10, 10)
+hyRange<- c(-16, 16)
+hRange <- c(0, 0.25)
+
+bins   <- c(-50, -16, -15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 50)
+
+op <- par(mfrow = c(3, 3), # 3 x 3 pictures on one plot
+          pty = "s")       # square plotting region,
+                           # independent of device size
+##################
+# factory
+##################
+
+SatCE90  = 5
+DEMLE90  = 16	
+StDevSat = SatCE90 / 2.1460
+StDevz   = DEMLE90 / 1.6449
+
+vert_e <- rnorm(length(dz_Array),0,StDevz)
+sat_x  <- rnorm(3000 ,0,StDevSat)
+sat_y  <- rnorm(3000 ,0,StDevSat)
+
+plot (sat_x, sat_y, col="red", xlim = xRange, ylim = yRange, 
+	main = paste("sat CE90 =", SatCE90, sep="  "),
+	xlab="x", 
+	ylab="y", 
+	cex=0.3) 
+
+hist (vert_e, breaks = bins, xlim=hyRange, ylim = hRange, col="red", ylab="frequency")
+
+dz_vert_e_sorted <- sort(vert_e)
+
+plot (dz_vert_e_sorted, ylim=vyRange1, cex=0.3, col="red")
+
+##################
+# before adjustment
+##################
+
+plot (rnorm(3000,0,(4.0/2.1460)), 
+      rnorm(3000,0,(4.0/2.1460)), 
+      col="blue", xlim = xRange, ylim = yRange, 
+	main = paste("sat CE90 = 4.0", sep="  "),
+	xlab="x", 
+	ylab="y", 
+	cex=0.3) 
+
+lat_Array  <- c(myData1 $LAT)
+lon_Array  <- c(myData1 $LON)
+dz_Array   <- c(myData1 $DELTA_Z)
+dz_Array_sorted <- sort(dz_Array)
+
+line_Res_Array  <- c(myDataTie1 $LINE_RES)
+samp_Res_Array  <- c(myDataTie1 $SAMP_RES)
+
+# plot (lon_Array, lat_Array)
+# plot (samp_Res_Array, line_Res_Array)
+
+hist (dz_Array, breaks = bins, xlim=hyRange, ylim = hRange, col="blue", ylab="frequency")
+
+# plot (lon_Array, dz_Array, ylim=yRange)
+
+plot  (dz_vert_e_sorted,ylim=vyRange1, cex=0.3, col="red")
+points(dz_Array_sorted, ylim=vyRange1, cex=0.3, col="blue")
+
+##################
+# after adjustment
+##################
+
+plot (rnorm(3000,0,(2.5/2.1460)), 
+      rnorm(3000,0,(2.5/2.1460)), 
+      col="green", xlim = xRange, ylim = yRange, 
+	main = paste("sat CE90 = 2.5", sep="  "),
+	xlab="x", 
+	ylab="y", 
+	cex=0.3) 
+
+
+lat_Array   <- c(myData2 $LAT)
+lon_Array   <- c(myData2 $LON)
+dz_Array2   <- c(myData2 $DELTA_Z)
+dz_Array2_sorted <- sort(dz_Array2)
+
+line_Res_Array  <- c(myDataTie2 $LINE_RES)
+samp_Res_Array  <- c(myDataTie2 $SAMP_RES)
+
+#plot (lon_Array, lat_Array)
+
+#plot (samp_Res_Array, line_Res_Array)
+hist (dz_Array2, breaks = bins, xlim=hyRange,  ylim = hRange, col="green", ylab="frequency")
+
+# plot (lat_Array, dz_Array2, ylim=yRange)
+
+plot  (dz_vert_e_sorted, ylim=vyRange1, cex=0.3, col="red")
+points(dz_Array_sorted,  ylim=vyRange1, cex=0.3, col="blue")
+points(dz_Array2_sorted, ylim=vyRange1, cex=0.3, col="green")
+
+sd(dz_Array) * 1.6449
+sd(dz_Array2)* 1.6449
+

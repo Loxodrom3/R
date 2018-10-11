@@ -1,0 +1,9 @@
+inFile <- "C:/temp_working/IDAHO/Lima2.txt"  		# indentify the input file for reading
+myData <- read.delim(inFile, header=FALSE, sep = "")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+
+x_Array <- c(myData $V1)
+y_Array <- c(myData $V2)
+xp_Array <- c(myData $V3)
+yp_Array <- c(myData $V4)
+
+plot (x_Array, y_Array, col="blue", cex=0.5)

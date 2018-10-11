@@ -1,0 +1,50 @@
+library("rjson") 
+library("stringr")
+
+monthColors <-c(
+"azure3", "azure2", "azure1",
+"cyan3", "cyan2", "cyan1", 
+"chartreuse4", "chartreuse3", "chartreuse1", 
+"darkorange4", "darkorange3", "darkorange1")
+
+filePrefix <- "costa" # this will be appended with "mssol.json"
+json_file <- paste ("Q:/Public Drop/", filePrefix,"_mssol.json", sep="")
+json_data <- fromJSON(file=json_file)
+
+x<-numeric()
+
+for (i in 1:100000) {
+	x[i] <- json_data $features[[i]]$properties$ACQ_DATE
+} #end for i
+
+#x <- unique(x)
+
+
+acqDates <- as.Date(x)
+
+months <- format (acqDates, '%m')
+
+monthCount <- c(
+Jan = sum(str_count(months, "01")), 
+Feb = sum(str_count(months, "02")), 
+Mar = sum(str_count(months, "03")), 
+Apr = sum(str_count(months, "04")), 
+May = sum(str_count(months, "05")), 
+Jun = sum(str_count(months, "06")), 
+Jul = sum(str_count(months, "07")), 
+Aug = sum(str_count(months, "08")), 
+Sep = sum(str_count(months, "09")), 
+Oct = sum(str_count(months, "10")), 
+Nov = sum(str_count(months, "11")), 
+Dec = sum(str_count(months, "12")) )
+
+pie(monthCount, init.angle = 90, clockwise= FALSE, col =monthColors, 
+main=paste(filePrefix, " frequency by month"))
+
+##########Need to add the multi plot layout###########
+#
+#barplot(monthCount, col=monthColors, main=filePrefix)
+
+monthCount
+
+

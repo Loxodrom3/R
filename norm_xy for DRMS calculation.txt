@@ -1,0 +1,24 @@
+
+numSamps = 10000
+
+ce90 = 10.2
+stdev= ce90/2.1460
+
+x <- rnorm(numSamps, sd=stdev)
+y <- rnorm(numSamps, sd=stdev)
+
+r <- sqrt(x^2+y^2)
+sdxy <- (sd(x)+sd(y))/2
+
+sdx <- sd(x)
+sdy <- sd(y)
+
+drms <- sqrt(sdx^2 + sdy^2)
+
+sdx
+drms
+
+ce90/drms
+
+
+\\mnt\tier2\jcollins\polar_cd_problem

@@ -1,0 +1,45 @@
+##############################
+## 
+## probability for geoemtric break between 2 un-adjusted images
+##
+##############################
+
+numSamps <- 1000000	# number of samples to test over
+reportPercents <-c(0.25, 0.50, 0.90, 0.95, 1)	# reporting percentages
+
+CE901  <- 6.7	# image CE90
+CE902  <- 6.7	# image CE90
+stdev1 <- CE901/2.1460	# convert CE90 to sd
+stdev2 <- CE902/2.1460	# convert CE90 to sd
+
+
+xRange <- c(-15, 15)	# range for plotting
+yRange <- c(-15, 15)	# range for plotting
+
+###  build out sample points for image 1
+x <- rnorm (numSamps, 0, stdev1)  
+y <- rnorm (numSamps, 0, stdev1)
+
+###  build out sample points for image 2
+j <- rnorm (numSamps, 0, stdev2)
+k <- rnorm (numSamps, 0, stdev2)
+
+###  calculate the distance between point pairs
+d <- sqrt((x-j)^2+(y-k)^2)
+
+### Report
+quantile(d, probs=reportPercents)
+
+
+### plot the points
+plot(x,y, cex=0.3, col="blue", xlim=xRange, ylim=yRange)
+points(j,k, cex=0.3, col="red")
+
+### draw lines between point pairs
+for (i in 1:50  ) {
+#	lines(c(x[i],j[i]), c(y[i],k[i]))
+	arrows(x[i],y[i],j[i],k[i], length = 0.1, angle = 30, col="Black", lty=1)
+}
+
+### Report
+quantile(d, probs=reportPercents)

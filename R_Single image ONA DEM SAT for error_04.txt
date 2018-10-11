@@ -1,0 +1,52 @@
+# R_Single image matrix ONA  LE90 for accuracy estimate.txt
+
+# given a satCE90, and a DEMLE90, and image ONA, this script generates an
+# estimated product CE90 for a DEMs LE90 and ONAs
+
+bins = 100							# declare the number of Bins for the histogram
+xRange <- c(0, 25)						# using xRange to set the x axis limits of xlim...
+yRange <- c(0, 0.3)
+histName <- "horiz Error Histogram of image at "
+reportPercentages <- c(0.50, 0.75, 0.90, 0.95, 0.999)			# used for the quantile report %'s
+reportColors      <- c("Orange", "grey", "Blue", "Green", "Red")
+confidenceReport <- 0.95  	# used for reporting confidence
+
+numSamples = 1000000
+errorArray <- array(1:numSamples)
+
+ona     = 26.5
+SatCE90 = 5
+DEMLE90    = 16
+
+StDevSat = SatCE90 / 2.1460
+StDevz   = DEMLE90 / 1.6449					# convert LE90 to Standard Deviation (z) of DEM - Assumes normal gausian distribution
+
+##############
+# Model errors
+
+		vert_e    <- rnorm(numSamples,0,StDevz)
+		sat_x     <- rnorm(numSamples,0,StDevSat)
+		sat_y     <- rnorm(numSamples,0,StDevSat)
+		sat_e     <- sqrt(sat_x^2 + sat_y^2)				# Sat_e as a radial distance of the x and y component.  it is a positive distance
+		terr_disp <- vert_e*tan(ona*(pi/180))				# horizontal error is the vertical error from the DEM times the tangent of the ONA (values for tan need to be in radians, so we use ona*pi/180 to go from degrees to radians
+		terr_disp <- sqrt(terr_disp * terr_disp)			# provides the absolute value for Horizontal error.  This is a radial error, there can not be negatives
+		horiz_e_total <- sqrt((sat_e*sat_e) + (terr_disp*terr_disp))	# rss
+
+#################
+##### Report 
+
+hist(horiz_e_total, breaks =bins, xlim = xRange, ylim = yRange, main = paste(histName, ona, " deg ONA"), freq = FALSE)
+
+for(i in 1:length(reportPercentages)){
+
+	x<- c(quantile (horiz_e_total, reportPercentages[i]), quantile (horiz_e_total, reportPercentages[i]))
+	y<- c(0, 0.25)
+	lines(x, y, col = reportColors [i])
+
+}  #end i
+
+legend(11, 0.3, c(paste("satCE90  = ",SatCE90,"m"),paste("DEMLE90 = ",DEMLE90,"m"), paste( confidenceReport*100, "% Confidence CE90 = ",signif(quantile (horiz_e_total, c(confidenceReport)),3),"m")), 
+	text.col = "green4", merge = TRUE, bg = "gray90")
+
+
+quantile (horiz_e_total, reportPercentages)

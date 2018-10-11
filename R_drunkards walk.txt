@@ -1,0 +1,27 @@
+numSamps <- 10000
+CE90  <- 10
+stdev <- CE90/2.1460
+stdevW<- 0.1
+
+xRange <- c(-50, 50)
+yRange <- c(-50, 50)
+
+x <- rnorm (numSamps, 0, stdev)
+y <- rnorm (numSamps, 0, stdev)
+r <- sqrt(x^2, y^2)
+
+w <- 1:(2*numSamps)
+dim(w) <- c(numSamps,2)
+w[1,1] <- 0
+w[1,2] <- 0
+
+for (i in 2: (numSamps)){
+	w[i,1] <- w[(i-1),1] + rnorm(1,0,.1)
+	w[i,2] <- w[(i-1),2] + rnorm(1,0,stdevW)
+}
+
+plot (w, xlim=xRange, ylim= yRange, cex=0.3)
+lines(w)
+sd(w[1,])
+sd(w[,1])
+

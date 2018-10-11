@@ -1,0 +1,94 @@
+# Note: the 90%, 95%, 99% lines need to be reviewed.  
+# THEY ARE NOT CORRECT AS OF 2/1/2016.
+# Add Key
+
+numRND   = 150	# the number of Random Numbers or images or reading going into the sample
+numSamps = 2000	# the number of samples for each set of numRND
+
+xLabel = "number of Samples"
+yLabel = "average horizontal error"
+title  = "Law of Large numbers: simulated data"
+yRange <- c(0, 6)						# using xRange to set the x axis limits of xlim...
+
+
+reportPercentages <- c(.50, .90, .95, .99, .99999)		# used for the quantile report %'s
+
+SatCE90   = 5
+StDevSat  = SatCE90  / 2.1460
+BndlCE90  = 2
+StDevBndl = BndlCE90 / 2.1460
+
+mx <- numeric()
+ni <- numeric()
+nf <- numeric()
+nn <- numeric()
+
+r  <- 1:(numRND*numSamps) 
+dim(r) <- c(numRND,numSamps)
+
+# Make array
+
+
+for (i in 1:numRND) {
+	for (j in 1:numSamps) {
+		sat_x    <- rnorm(i,0,StDevSat)
+		sat_avgx <- (sum(sat_x)/length(sat_x))
+		sat_y    <- rnorm(i,0,StDevSat)
+		sat_avgy <- (sum(sat_y)/length(sat_y))
+		sat_avg_err  <- sqrt(sat_avgx^2 + sat_avgy^2)
+
+		bndl_x   <- rnorm(i,0,StDevBndl)
+		bndl_avgx<- (sum(bndl_x)/length(bndl_x))
+		bndl_y   <- rnorm(i,0,StDevBndl)
+		bndl_avgy<- (sum(bndl_y)/length(bndl_y))
+		bndl_avg_err <- sqrt(bndl_avgx^2 + bndl_avgy^2)
+
+		r[i,j] <- sqrt(sat_avg_err^2 + bndl_avg_err^2)
+
+	} # End for j
+	mx[i] <- max(r[i,])
+	ni[i] <- quantile (r[i,],0.90)  #  check
+	nf[i] <- sd(r[i,]*2.4477)  #  check
+	nn[i] <- quantile (r[i,],0.99)  #  check
+} # End for i
+
+# write array
+
+
+x_Array <- c(1:numRND*numSamps)
+y_Array <- c(1:numRND*numSamps)
+a = 1
+
+for (i in 1:numRND) {
+	for (j in 1:numSamps) {
+		x_Array[a] <- i				
+		y_Array[a] <- r[i,j] 
+		a <- a+1
+	}  # End for j
+}  # End for i
+
+plot (x_Array, y_Array, col = "blue", ylim = yRange, xlab= xLabel, ylab = yLabel, main = title, cex = 0.3)
+lines ( c(1:numRND),ni, col = "red")
+lines ( c(1:numRND),nf, col = "orange")
+lines ( c(1:numRND),nn, col = "blue")
+
+lines ( c(0,numRND), c(SatCE90,SatCE90), col="gray", lty="dotted")
+lines ( c(0,numRND), c(2  ,2  ), col="gray", lty="dotted")
+lines ( c(0,numRND), c(1.5,1.5), col="gray", lty="dotted")
+lines ( c(0,numRND), c(1  ,1  ), col="gray", lty="dotted")
+lines ( c(0,numRND), c(SatCE90/2,SatCE90/2), col="gray", lty="dotted")
+
+
+
+SatCE90
+BndlCE90
+numRND
+numSamps
+quantile (r[1,], c(reportPercentages))
+ni[1]
+sd(r[1,])
+quantile (r[numRND,], c(reportPercentages))
+ni[numRND]
+sd(r[numRND,])
+
+

@@ -1,0 +1,26 @@
+###############################
+# Plot check points with arrows
+###############################
+
+inFile <- "C:/Users/Jon/OneDrive/OD_Documents/R/GCP_to_phx_283010.txt" # indentify the input file for reading
+myData <- read.table(inFile, header=FALSE, sep = "")	#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+
+scalingFactor <- 500     # Scaling factor to magnify the error residuals
+
+x_Array  <- c(myData $V1)
+y_Array  <- c(myData $V2)
+xp_Array <- c(myData $V3)
+yp_Array <- c(myData $V4)
+
+dx <- (x_Array - xp_Array)
+dy <- (y_Array - yp_Array)
+
+plot (x_Array, y_Array, col="blue", cex=0.5)
+
+for (i in 1:length(x_Array)) {
+	arrows( x_Array[i], y_Array[i], 
+      (x_Array[i]+(dx[i]*scalingFactor)),(y_Array[i]+(dy[i]*scalingFactor)), 
+      length = 0.1, angle = 30, 
+      col="blue", lty=1)
+} #end for i
+

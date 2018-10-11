@@ -1,0 +1,23 @@
+library("rjson") 
+filePrefix <- "north_sunAz_" # this will be appended with "mssol.json"
+json_file <- paste ("Q:/Public Drop/", filePrefix,"mssol.geojson", sep="")
+json_data <- fromJSON(file=json_file)
+
+x<-numeric()
+
+for (i in 1:100000) {
+	x[i] <- json_data $features[[i]]$properties$SUNAZ
+} #end for i
+
+#x <- unique(x)
+x <- sort (x)
+
+
+zz <- file(paste(filePrefix,"_CatID.txt",sep=""), "w")  # open an output file connection.  
+# Location is C:\Users\jproctor\Documents
+cat(x, sep = "\n", file = zz)
+# cat("One more line\n", sep = ",", file = zz)
+close(zz)
+
+
+hist(x, breaks=20, xlim=c((90+35),(270-35)))

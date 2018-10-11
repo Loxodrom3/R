@@ -1,0 +1,55 @@
+library(rgdal)
+library(geojsonio)
+library(sp)
+library(maps)
+library(ggmap)
+library(maptools)
+library("rjson") 
+library("stringr")
+
+# data_file <- "C:/temp_working/footies/footie02_u.geojson"
+data_file <- "C:/temp_working/footies/eight.geojson"
+numTimes  <- 20 # iterations
+wait <- 0    #seconds
+
+mosaic_e <-  1.5  # m CE90
+ecopia_e <- 0   # m CE90
+mosaicStDev <- mosaic_e/2.1460
+ecopiaStDev <- ecopia_e/2.1460
+
+data_foot <- geojson_read(data_file, what ="sp")
+json_data <- fromJSON(file = data_file)
+
+title <- paste("Feature offset: ", mosaic_e, "m mosaic CE90,", ecopia_e, "m footprint CE90", numTimes, "iterations", sep = " ")
+
+plot(data_foot, col ="green", main = title)
+
+
+
+for (h in 1:numTimes) {
+
+  xErrorMos <- rnorm(1,0,mosaicStDev)
+  yErrorMos <- rnorm(1,0,mosaicStDev)
+  xErrorEco <- rnorm(1,0,mosaicStDev)
+  yErrorEco <- rnorm(1,0,mosaicStDev)
+  
+  for(i in  1:length(json_data $features)){
+ 
+    for(j in 1:length(json_data $features[[i]]$geometry$coordinates[[1]])){
+
+      newx[j] <- c (json_data $features[[i]]$geometry$coordinates[[1]][[j]][1]+xErrorMos+xErrorEco)
+
+      newy[j] <- c (json_data $features[[i]]$geometry$coordinates[[1]][[j]][2]+yErrorMos+xErrorEco)
+
+ 
+    } #end j
+
+    lines(newx, newy, col = "red")
+    newx <- c()
+    newy <- c()
+    Sys.sleep (wait)
+
+  } #end i
+} #end h
+
+#end

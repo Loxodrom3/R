@@ -1,0 +1,16 @@
+n<-400
+ce90<-5
+stD <- ce90/2.146
+x <- rnorm(n,0,stD)
+y <- rnorm(n,0,stD)
+
+plot (x,y)
+min(x)
+max(x)
+min(y)
+max(y)
+mean(x)
+mean(y)
+
+
+

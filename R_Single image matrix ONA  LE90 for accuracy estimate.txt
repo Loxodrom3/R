@@ -1,0 +1,92 @@
+# R_Single image matrix ONA  LE90 for accuracy estimate.txt
+# given a satCE90, and a DEMLE90, this script generates an
+# estimated product CE90 for a range of LE90s (1:DEMLE90) and ONAs
+# ---REWORK---
+# rework this to be the sat CE90 at NADIR, and project the error ellipse out to ONA  (3.5 at 0 to 5m at 30 degree ona)
+
+reportPercentConfidence = 0.95    # report confidence, i.e. 0.90 -> 90% confidence  0.95 -> 95% confidence
+onaList <- seq(0, 30, by=1)       # list of ONAs to report
+DEMeList<- c(20,16,8, 4)          # list of DEM LE90's to report
+satCE90List = c(5, 2.5, 1)           # list of Satellite CE90
+
+depth = 500000                   # more 0's, more precision
+
+SatCE90 = 5
+LE90    = 16
+
+StDevSat = SatCE90 / 2.1460
+StDevz   = LE90 / 1.6449	  # convert LE90 to Standard Deviation (z) of DEM - Assumes normal gausian distribution
+
+
+##############
+reportArray <- array(NA, c(length(onaList), length(DEMeList), length(satCE90List)))
+
+
+for (i in  seq(along=onaList)){
+	ONA_Array <- array(onaList[i], depth)
+
+	for (LE90i in 1:length(DEMeList)){
+		# Model errors
+		StDevz   = DEMeList[LE90i] / 1.6449
+
+		vert_e    <- rnorm(length(ONA_Array),0,StDevz)
+
+		for (satCE90i in 1:length(satCE90List)){
+			sat_x     <- rnorm(length(ONA_Array),0,satCE90List[satCE90i]/2.1460)
+			sat_y     <- rnorm(length(ONA_Array),0,satCE90List[satCE90i]/2.1460)
+  			sat_e     <- sqrt(sat_x^2 + sat_y^2)				  # Sat_e as a radial distance of the x and y component
+			terr_disp <- vert_e*tan(ONA_Array*(pi/180))		# horizontal error is the vertical error from the DEM times the tangent of the ONA (values for tan need to be in radians, so we use ona*pi/180 to go from degrees to radians
+			terr_disp <- sqrt(terr_disp * terr_disp)			# provides the absolute value for Horizontal error.  This is a radial error, there can not be negatives
+			horiz_e_total <- sqrt((sat_e*sat_e) + (terr_disp*terr_disp))	# rss
+  			reportArray[i,LE90i,satCE90i] <- quantile(horiz_e_total, reportPercentConfidence)
+		} #end satCE90i
+	} #end LE90i
+} #end i, ona
+
+#############
+### Report
+
+onaList
+
+############
+### Plot
+
+xRange <- c(min(onaList), max(onaList))
+# yRange <- c(0, max(reportArray)) 	# use for auto-ranging on the y-axis
+yRange <- c(0, 14)
+colArray <- c("red", "blue", "green", "orange")
+
+xName <- "ONA"
+yName <- paste("CE90 @ ",  reportPercentConfidence, " Confidence")
+
+
+
+op <- par(mfrow = c(2, 2),  # 2 x 2 pictures on one plot
+           pty = "s")       # square plotting region, independent of device size
+
+
+plot  (reportArray [, 1, 1], col = colArray[1], xlab= xName, ylab= yName, main= paste("satCE90", satCE90List[1], "m"), xlim= xRange, ylim= yRange, typ='l')
+lines (reportArray [, 2, 1], col = colArray[2])
+lines (reportArray [, 3, 1], col = colArray[3])
+lines (reportArray [, 4, 1], col = colArray[4])
+
+plot  (reportArray [, 1, 2], col = colArray[1], xlab= xName, ylab= yName, main= paste("satCE90", satCE90List[2], "m"), xlim= xRange, ylim= yRange, typ='l')
+lines (reportArray [, 2, 2], col = colArray[2])
+lines (reportArray [, 3, 2], col = colArray[3])
+lines (reportArray [, 4, 2], col = colArray[4])
+
+plot  (reportArray [, 1, 3], col = colArray[1], xlab= xName, ylab= yName, main= paste("satCE90", satCE90List[3], "m"), xlim= xRange, ylim= yRange, typ='l')
+lines (reportArray [, 2, 3], col = colArray[2])
+lines (reportArray [, 3, 3], col = colArray[3])
+lines (reportArray [, 4, 3], col = colArray[4])
+
+## Legend
+legCornerX <- min(xRange)
+legCornerY <- max(yRange)
+legend(legCornerX, legCornerY, 
+	c(paste("DEMLE90", DEMeList[1], "m"), 
+	  paste("DEMLE90", DEMeList[2], "m"),
+	  paste("DEMLE90 ", DEMeList[3], "m"),
+	  paste("DEMLE90 ", DEMeList[4], "m")), 
+	col = c(colArray[1], colArray[2], colArray[3], colArray[4]), 
+        text.col = "gray30", lty = c(1, 1, 1, 1), lwd = c(1,1,1,1,1), pch = c(NA, NA, NA, NA), merge = TRUE, bg = "gray90")

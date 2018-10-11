@@ -1,0 +1,144 @@
+################################## 
+#
+# IDAHO Reporting
+#
+##################################
+
+##################################
+#Setup
+file   <- "055229283010_P800_to_Idaho2.txt"
+dir    <- "C:/temp_working/IDAHO/Report_me/"
+inFile <- paste (dir,file,sep="") # "C:/temp_working/IDAHO/055229282010/055229282010_P800_to_Idaho.txt"  # indentify the input file for reading
+myData <- read.table(inFile, header=FALSE, sep = "")#read the inFile as a table.  NOTE: I had to remove the date/time fields 
+
+scalingFactor <- 750  # Scaling factor to magnify the error residuals
+
+reporting_percents <- c(0, 0.25, 0.5, 0.75, 0.90, 0.95, 0.99, 1)
+
+op <- par(mfrow = c(1, 2), # 2 x 1 pictures on one plot
+          pty = "s")       # square plotting region,
+                           # independent of device size
+
+##################################
+# Read Data
+x_Array  <- c(myData $V1)
+y_Array  <- c(myData $V2)
+xp_Array <- c(myData $V3)
+yp_Array <- c(myData $V4)
+
+
+##################################
+# calculate diff XandY  find r
+dx <- (xp_Array - x_Array)
+dy <- (yp_Array - y_Array)
+r  <- sqrt(dx^2 + dy^2)
+
+####################################
+# Calculate PlotRange from dx and dy
+plotRange <- max( dx, dy, abs(min(dx)), abs(min(dy)))
+
+xRange <- c(plotRange*(-1), plotRange)
+yRange <- c(plotRange*(-1), plotRange)
+range  <- max(xRange, yRange)
+
+##################################
+# calculate sd
+sdxy <- (sd(dx)+sd(dy))/2
+sdxy
+CE90SDxy <- sdxy*2.1460   #CE90 from Sdxy
+CE95SDxy <- sdxy*2.4477   #CE95 from DSxy
+CE90Pcntl<- quantile (r, c(0.90))     #90th Percentile
+CE95Pcntl<- quantile (r, c(0.95))     #95th Percentile
+
+
+#########################################
+# Make Circles for plotting various CE90s
+
+cirSpacing <- 2  #  circle Spacing in degrees. this is for drawing the circles.
+cir <- seq(0, 360, by=cirSpacing)
+CE90PcntlCirX <-1:length(cir) # x coordinates for circle
+CE90PcntlCirY <-1:length(cir) # y coordinates for circle
+CE95PcntlCirX <-1:length(cir) # x coordinates for circle
+CE95PcntlCirY <-1:length(cir) # y coordinates for circle
+CE90SDxyCirX  <-1:length(cir)
+CE90SDxyCirY  <-1:length(cir)
+CE95SDxyCirX  <-1:length(cir)
+CE95SDxyCirY  <-1:length(cir)
+
+for (pnts in 0:(360/cirSpacing)+1)  {
+	CE90PcntlCirX[pnts] <- sin(cir[pnts]*pi/180)* CE90Pcntl
+	CE90PcntlCirY[pnts] <- cos(cir[pnts]*pi/180)* CE90Pcntl
+#	CE90SDxyCirX[pnts]  <- sin(cir[pnts]*pi/180)* CE90SDxy
+#	CE90SDxyCirY[pnts]  <- cos(cir[pnts]*pi/180)* CE90SDxy
+	} # end for pnts
+
+
+
+#########################################
+# Draw the Plots
+
+#########################################################
+# Plot 1: x,y scatter with CE90 (based on direct ranking)
+plot (dx, dy, col="blue", xlim = xRange, ylim = yRange, 
+	main = paste(file, "CE90", sep="  "),
+	xlab="Difference Easting", 
+	ylab="Difference Northing", 
+	cex=0.5) 
+points (sum(dx)/length(dx), sum(dy)/length(dy), col="red", cex=2, pch=3) # red cross at center of points
+
+# Grid Lines  # not sure if these Grid Lines make sense with the xRange and yRange being defined dynamically
+lines ( xRange, c(0,0), col="gray", lty="solid")
+lines ( c(0,0), yRange, col="gray", lty="solid")
+
+lines ( xRange, c(0.5*range,0.5*range), col="gray", lty="dotted")  
+lines ( xRange, c(-0.5*range,-0.5*range), col="gray", lty="dotted")
+
+lines ( c(0.5*range,0.5*range),   yRange, col="gray", lty="dotted")
+lines ( c(-0.5*range,-0.5*range), yRange, col="gray", lty="dotted")
+
+# CE90 Circle
+lines (CE90PcntlCirX, CE90PcntlCirY, col=3, lwd = 1)
+
+# Legend
+legCornerX <- min(xRange)
+legCornerY <- max(yRange)
+legend(legCornerX, legCornerY, 
+	c(paste(round(CE90Pcntl,digits=2), "m CE90", sep = ""), "Mean"), 
+	col = c(3, 2), text.col = "green4", 
+	lty = c(1, 1, 1, 1), lwd = c(1,1,1,1,1), pch = c(NA, NA, NA, NA), merge = TRUE, bg = "gray90")
+
+################################################
+## Plot 2: Point distribution with error vectors
+plot (x_Array, y_Array, col="blue", 
+	main="Point Distribution",
+	xlab="Easting", 
+	ylab="Northing",
+	cex=0.5 )
+
+for (i in 1:length(x_Array)) {
+	arrows( x_Array[i], y_Array[i], 
+      (x_Array[i]+(dx[i]*scalingFactor)),(y_Array[i]+(dy[i]*scalingFactor)), 
+      length = 0.05, angle = 30, 
+      col="blue", lty=1)
+} #end for i
+
+#########
+## Plot 3
+#plot (x_Array, y_Array, col="blue", cex=0.5)
+
+
+
+CE90Pcntl
+CE95Pcntl
+CE90SDxy
+CE95SDxy
+
+sum(dx)/length(dx)
+sum(dy)/length(dy)
+sd(dx)
+max(dx)-min(dx)
+sd(dy)
+max(dy)-min(dy)
+quantile (r, reporting_percents)
+
+

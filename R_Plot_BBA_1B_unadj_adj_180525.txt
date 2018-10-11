@@ -1,0 +1,67 @@
+###############################
+# Plot 1B Accuracy 
+# Before and After BBA
+###############################
+
+##########################################################################################
+#
+# Upgrades: 
+#
+##########################################################################################
+
+##################
+# Files and Data
+##################
+
+filePath1 <- "Q:/Public Drop/block46/" # path to the BEF ORE
+file <- "arkansas_1b_evaluation.csv" # contains delta lat and delta long of tie points  
+inFile1 <- paste(filePath1, file, sep = "")
+myData1 <- read.table(inFile1, header=TRUE, sep = ",")	#read the inFile as a table. 
+
+##################
+# Read the Data
+##################
+unadj_lat_Array  <- c(myData1 $raw_lat_delta)
+unadj_lon_Array  <- c(myData1 $raw_lon_delta)
+adj_lat_Array    <- c(myData1 $adj_lat_delta)
+adj_lon_Array    <- c(myData1 $adj_lon_delta)
+
+##################
+# Plot constants
+##################
+
+xRange <- c(-6, 6)
+yRange <- c(-6, 6)
+
+##################
+# Plot
+##################
+
+
+plot (unadj_lon_Array, unadj_lat_Array,xlim=xRange, ylim = yRange, col="blue", cex=0.6)
+points (adj_lon_Array, adj_lat_Array, col="green", cex=0.6)
+
+
+# arrows
+for (i in 1: length(unadj_lat_Array)) {
+  arrows (unadj_lon_Array[i],unadj_lat_Array[i],adj_lon_Array[i],adj_lat_Array[i], 
+	length=0.1, angle=20, col="grey")
+} #end i 
+
+points (adj_lon_Array, adj_lat_Array, col="green", cex=0.8)
+
+
+abline(h = min(xRange):max(xRange), v = min(yRange):max(yRange), col = "lightgray", lty = 3)
+abline(h = 0, v = 0, col = "black", lty = 1)
+
+
+
+
+##################
+# Data Statistics
+##################
+
+mean (unadj_lat_Array)
+mean (unadj_lon_Array)
+mean (adj_lat_Array)
+mean (adj_lon_Array)
